@@ -122,57 +122,63 @@ body{
    media queries add no specificity of their own, so an unprefixed
    `display:none` here silently loses to the base `display:block`. */
 @media (max-width:640px){
-  /* PORTRAIT: floral border with a clear centre.
-     The desktop frame (full-height peony panels + stars) is authored for
-     2.2:1 and does not translate, so phones get their own composition:
-     blooms ringing all four edges with the emblem and headline in the
-     middle. Measured off the portrait mockup - art roughly 23% in from the
-     left, 38% from the right, 29% down from the top and 20% up from the
-     bottom, with the headline band left clear. */
+  /* PORTRAIT: floral border, clear centre. Measured off the portrait mockup
+     (1203x2361, 0.510). Desktop's frame is authored for 2.2:1 and does not
+     translate, so phones get their own composition. */
   #heroFrame{ display:block; }
   #heroFrame .hf { display:none; }      /* desktop frame off */
   #heroFrame .hfm{ display:block; }
 
   #heroFrame .hfm{
-    position:absolute; height:auto;
+    position:absolute;
     /* transform only. Deliberately NOT will-change:opacity - these carry a
        static blur, and animating opacity on a blurred layer forces a fresh
        blur pass every frame, which is what made the hero laggy before. */
     will-change:transform;
   }
+  #heroFrame img.hfm{ height:auto; }
 
-  /* Variable layer blur standing in for depth of field: the biggest and
-     outermost blooms read as nearest the lens, so they blur hardest. In vw
-     so it holds proportion across phone sizes. Measured against the mockup,
-     the florals sit ~2.5x softer than the centre. */
+  /* Blooms cropped out of the bouquet. background-size pushes the art past
+     the element's own box so ONE flower fills it and the stems land outside;
+     background-position picks which flower - the pink bloom sits at (35%,78%)
+     of the asset and the cream at (52%,37%), measured by colour segmentation. */
+  #heroFrame .hfm-bloom{
+    background-image:url(images/peonies.webp);
+    background-repeat:no-repeat;
+    background-size:210% auto;
+    /* The crop box would otherwise cut the bloom off with hard straight
+       edges mid-frame. In the mockup flowers are only ever cut by the frame
+       edge itself, so fade each box radially and the petals dissolve into
+       the paper instead of ending on a rectangle. */
+    -webkit-mask-image:radial-gradient(closest-side, #000 76%, rgba(0,0,0,0) 100%);
+            mask-image:radial-gradient(closest-side, #000 76%, rgba(0,0,0,0) 100%);
+  }
+  #heroFrame .hfm-pink { background-position:35% 78%; }
+  #heroFrame .hfm-cream{ background-position:52% 37%; }
+
+  /* Variable layer blur, standing in for depth of field: the biggest and
+     outermost blooms read as nearest the lens, so they blur hardest. */
   #heroFrame .hfm-b1{ filter:blur(0.22vw); }
-  #heroFrame .hfm-b2{ filter:blur(0.36vw); }
-  #heroFrame .hfm-b3{ filter:blur(0.52vw); }
-  #heroFrame .hfm-b4{ filter:blur(0.72vw); }
+  #heroFrame .hfm-b2{ filter:blur(0.34vw); }
+  #heroFrame .hfm-b3{ filter:blur(0.48vw); }
+  #heroFrame .hfm-b4{ filter:blur(0.66vw); }
 
-  /* Blooms are large and pushed well past the frame edges so they crop
-     rather than float, and they overlap each other - that is what makes the
-     mockup's ring read as one continuous mass instead of separate cut-outs.
-     The offsets are big because the peony asset is tall (aspect 0.545), so
-     a wide one is very tall; pushing it further off-frame keeps its visible
-     band inside the top/bottom zones without shrinking the flower. */
-
-  /* top band - ends by ~33%, above the emblem */
-  #heroFrame .hfm-mint-tl { width:62%; left:-18%;  top: -6%; }
-  #heroFrame .hfm-peony-tl{ width:42%; left: 16%;  top:-16%; }
-  #heroFrame .hfm-peony-tr{ width:46%; right: -8%; top:-14%; }
-  #heroFrame .hfm-blue-tr { width:66%; right:-20%; top:  0%; }
+  /* top band - above the emblem */
+  #heroFrame .hfm-mint-tl { width:40%; left: -8%; top: -3%; }
+  #heroFrame .hfm-cream-tc{ width:42%; height:22%; left:16%; top: 0%; }
+  #heroFrame .hfm-pink-tr { width:38%; height:20%; right:18%; top:-4%; }
+  #heroFrame .hfm-blue-tr { width:48%; right:-10%; top:  2%; }
 
   /* middle - edges only, so the emblem and headline stay clear */
-  #heroFrame .hfm-peony-ml{ width:44%; left:-24%;  top: 20%; }
-  #heroFrame .hfm-blue-mr { width:50%; right:-26%; top: 16%; }
-  #heroFrame .hfm-mint-mr { width:30%; right: -8%; top: 40%; }
+  #heroFrame .hfm-pink-ml { width:34%; height:30%; left: -8%; top:22%; }
+  #heroFrame .hfm-pink-mr { width:34%; height:26%; right:-8%; top:26%; }
+  #heroFrame .hfm-mint-mr { width:26%; right:-6%; top:48%; }
+  #heroFrame .hfm-cream-bl{ width:32%; height:22%; left: -8%; top:54%; }
 
-  /* bottom band - starts by ~79%, below the headline */
-  #heroFrame .hfm-peony-bl{ width:58%; left:-20%;  bottom:-28%; }
-  #heroFrame .hfm-blue-bl { width:56%; left:  0%;  bottom: -8%; }
-  #heroFrame .hfm-peony-br{ width:52%; right:-16%; bottom:-24%; }
-  #heroFrame .hfm-blue-br { width:48%; right: -6%; bottom: -6%; }
+  /* bottom band - below the headline */
+  #heroFrame .hfm-pink-bl { width:40%; height:24%; left: -8%; bottom: 0%; }
+  #heroFrame .hfm-cream-br{ width:38%; height:24%; right:-6%; bottom: 4%; }
+  #heroFrame .hfm-blue-bc { width:40%; left:24%; bottom:-8%; }
 }
 /* Short landscape windows: very little vertical room, so cap the panels
    against width instead of height. */
@@ -306,23 +312,25 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
   <img class="hf hf-right hf-star-r1" src="images/star.webp"    width="320" height="371" alt="" decoding="async" loading="lazy">
   <img class="hf hf-right hf-star-r2" src="images/star.webp"    width="320" height="371" alt="" decoding="async" loading="lazy">
 
-  <!-- Phone-only floral border. Three assets reused across eleven positions,
-       so the extra elements cost no extra download. Blooms ring the edges
-       with the emblem and headline in a clear centre, per the portrait
-       mockup. Blur tiers stand in for depth of field: the biggest, outermost
-       blooms read as nearest the lens and carry the most blur. -->
-  <img class="hfm hfm-left  hfm-mint-tl  hfm-b4" src="images/bloom-mint.webp" width="375" height="499" alt="" decoding="async" loading="lazy">
-  <img class="hfm hfm-left  hfm-peony-tl hfm-b2" src="images/peonies.webp"    width="336" height="617" alt="" decoding="async" loading="lazy">
-  <img class="hfm hfm-left  hfm-peony-ml hfm-b3" src="images/peonies.webp"    width="336" height="617" alt="" decoding="async" loading="lazy">
-  <img class="hfm hfm-left  hfm-peony-bl hfm-b4" src="images/peonies.webp"    width="336" height="617" alt="" decoding="async" loading="lazy">
-  <img class="hfm hfm-left  hfm-blue-bl  hfm-b3" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
+  <!-- Phone-only floral border.
+       The pink and cream blooms are CROPPED out of the bouquet asset rather
+       than shown whole: divs with a background-image scaled past their own
+       box, so a single bloom fills each one and the stems fall outside the
+       frame. Showing the whole bouquet is what made this read as stems and
+       leaves instead of flowers. Blue and mint are single blooms already, so
+       they stay as plain imgs. -->
+  <img class="hfm hfm-left  hfm-mint-tl  hfm-b3" src="images/bloom-mint.webp" width="375" height="499" alt="" decoding="async" loading="lazy">
+  <div class="hfm hfm-left  hfm-bloom hfm-cream hfm-cream-tc hfm-b2"></div>
+  <div class="hfm hfm-left  hfm-bloom hfm-pink  hfm-pink-ml  hfm-b3"></div>
+  <div class="hfm hfm-left  hfm-bloom hfm-cream hfm-cream-bl hfm-b2"></div>
+  <div class="hfm hfm-left  hfm-bloom hfm-pink  hfm-pink-bl  hfm-b3"></div>
 
-  <img class="hfm hfm-right hfm-peony-tr hfm-b2" src="images/peonies.webp"    width="336" height="617" alt="" decoding="async" loading="lazy">
-  <img class="hfm hfm-right hfm-blue-tr  hfm-b4" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
-  <img class="hfm hfm-right hfm-blue-mr  hfm-b3" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
+  <div class="hfm hfm-right hfm-bloom hfm-pink  hfm-pink-tr  hfm-b2"></div>
+  <img class="hfm hfm-right hfm-blue-tr  hfm-b3" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
+  <div class="hfm hfm-right hfm-bloom hfm-pink  hfm-pink-mr  hfm-b2"></div>
   <img class="hfm hfm-right hfm-mint-mr  hfm-b1" src="images/bloom-mint.webp" width="375" height="499" alt="" decoding="async" loading="lazy">
-  <img class="hfm hfm-right hfm-peony-br hfm-b3" src="images/peonies.webp"    width="336" height="617" alt="" decoding="async" loading="lazy">
-  <img class="hfm hfm-right hfm-blue-br  hfm-b1" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
+  <div class="hfm hfm-right hfm-bloom hfm-cream hfm-cream-br hfm-b2"></div>
+  <img class="hfm hfm-right hfm-blue-bc  hfm-b3" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
 </div>
 
 <div id="bloom"></div>
