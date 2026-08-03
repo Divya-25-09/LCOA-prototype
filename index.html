@@ -104,38 +104,55 @@ body{
 .hf-peony-l{ width:min(54.46vh,40vw); left:0;  bottom:0; }
 .hf-peony-r{ width:min(54.46vh,40vw); right:0; bottom:0; }
 
-/* opacity .38 is measured, not picked: sampling a clear patch of the
-   mockup's left cloud and solving  target = bg + o*(asset - bg)  gives
-   o = 0.34..0.39 on the green and blue channels. (The red channel returns
-   a nonsense 2.06 because the cloud's red is nearly identical to the
-   background's, so the denominator collapses - ignore it.) */
-.hf-cloud-l{ width:clamp(120px,22.5vw,430px); left:6.8%;  top:16.7%; opacity:.38; }
-.hf-cloud-r{ width:clamp(120px,22.4vw,426px); left:72.4%; top: 1.5%; opacity:.38; }
-
 .hf-star-l1{ width:clamp(52px,11.15vw,212px); left:10.57%; top:-8.78%; }
 .hf-star-l2{ width:clamp(16px, 2.50vw, 47px); left: 2.42%; top:73.56%; }
 .hf-star-r1{ width:clamp(44px, 9.02vw,172px); left:93.90%; top: 9.82%; }
 .hf-star-r2{ width:clamp(26px, 4.89vw, 93px); left:92.74%; top:71.48%; }
 
 /* NB: these need the #heroFrame prefix. The base rule above is
-   `#heroFrame .hf` (id + class), which outranks a bare `.hf-cloud-l` -
+   `#heroFrame .hf` (id + class), which outranks a bare `.hf-star-l1` -
    media queries add no specificity of their own, so an unprefixed
    `display:none` here silently loses to the base `display:block`. */
 @media (max-width:640px){
-  /* The frame is 2.2:1; a phone is the opposite. Keep every element -
-     the composition is the point - but pull the panels in and let the
-     clouds sit lighter so the emblem still owns the middle. */
-  #heroFrame .hf-peony-l, #heroFrame .hf-peony-r{ width:min(54.46vh,34vw); }
-  #heroFrame .hf-cloud-l{ left:-2%;  top:14%; opacity:.32; }
-  #heroFrame .hf-cloud-r{ left:56%;  top: 2%; opacity:.32; }
-  #heroFrame .hf-star-l1{ left:6%;  top:-4%; }
-  #heroFrame .hf-star-r1{ left:82%; top: 8%; }
+  /* Content shifts up so the bottom band has room to sit under it
+     rather than through the headline. */
+  #hero{ padding-bottom:30vh; }
+
+  /* The frame is 2.2:1, a phone is the opposite, so the desktop rule
+     (width capped against 34vw) left the panels only ~230px tall and
+     stranded at the bottom - below ALL the content, framing nothing.
+     Here they keep their full height and get CROPPED instead: a fixed
+     height of 100% with object-fit:cover turns each one into a tall
+     botanical strip down its edge, which is what the panels do on
+     desktop. object-position picks the flower-dense part of the art
+     rather than its sparse stem edge. */
+  /* Panels form a continuous band along the BOTTOM rather than running
+     down the sides. On desktop the headline uses 45% of the width so
+     25% panels flank it cleanly; on a phone the same headline needs 66%,
+     so any side panel is forced behind the text. A bottom band keeps
+     the middle clear, which is the point of the frame. 50vw each means
+     the two meet in the middle and read as one band rather than two
+     stranded blobs. */
+  #heroFrame .hf-peony-l, #heroFrame .hf-peony-r{
+    width:50vw; bottom:0;
+    /* The artwork runs to the top edge of its own bitmap, so a band cut
+       straight across leaves a visible horizontal seam. Fade the top so
+       the botanicals dissolve into the paper instead. */
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 30%);
+            mask-image:linear-gradient(to bottom, transparent 0, #000 30%);
+  }
+
+  /* the two small stars are illegible at phone scale, so lift them and
+     drop the smallest rather than leave 16px specks on a panel edge */
+  #heroFrame .hf-star-l1{ left:4%;  top:-3%; width:19vw; }
+  #heroFrame .hf-star-r1{ left:80%; top: 7%; width:16vw; }
+  #heroFrame .hf-star-l2{ display:none; }
+  #heroFrame .hf-star-r2{ left:86%; top:64%; width:8vw; }
 }
 /* Short landscape windows: very little vertical room, so cap the panels
-   against width instead of height and drop the clouds. */
+   against width instead of height. */
 @media (max-height:520px){
   #heroFrame .hf-peony-l, #heroFrame .hf-peony-r{ width:min(54.46vh,22vw); }
-  #heroFrame .hf-cloud-l, #heroFrame .hf-cloud-r{ display:none; }
 }
 
 /* hero light bloom the dragonfly emerges from */
@@ -246,16 +263,14 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
      Composition measured from the Figma frame (1901x866) rather than
      eyeballed: each side is ONE full-height peony panel anchored to the
      edge (the asset at full frame height is 472px = 24.8% of width, which
-     is exactly the botanical band measured in the mockup), plus one cloud
-     and two stars per side at their measured percentages. -->
+     is exactly the botanical band measured in the mockup), plus two stars
+     per side at their measured percentages. -->
 <div id="heroFrame" aria-hidden="true">
   <img class="hf hf-left  hf-peony-l" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
-  <img class="hf hf-left  hf-cloud-l" src="images/cloud.webp"   width="457" height="364" alt="" decoding="async">
   <img class="hf hf-left  hf-star-l1" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
   <img class="hf hf-left  hf-star-l2" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
 
   <img class="hf hf-right hf-peony-r" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
-  <img class="hf hf-right hf-cloud-r" src="images/cloud.webp"   width="457" height="364" alt="" decoding="async">
   <img class="hf hf-right hf-star-r1" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
   <img class="hf hf-right hf-star-r2" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
 </div>
@@ -717,15 +732,9 @@ if (!reduce){
       defaults: { ease: 'none' },
     });
 
-    /* Clouds are excluded from the group selectors: they live inside
-       .hf-left/.hf-right, so including them here AND giving them their own
-       longer travel below would put two competing x tweens on one element. */
     heroFrameTl
-      .to('.hf-left:not(.hf-cloud-l)',  { x: () => -(innerWidth * 0.85), rotation:'-=6', duration:1 }, 0)
-      .to('.hf-right:not(.hf-cloud-r)', { x: () =>  (innerWidth * 0.85), rotation:'+=6', duration:1 }, 0)
-      // clouds drift further, so the layers visibly separate on the way out
-      .to('.hf-cloud-l', { x: () => -(innerWidth * 1.15), duration:1 }, 0)
-      .to('.hf-cloud-r', { x: () =>  (innerWidth * 1.15), duration:1 }, 0)
+      .to('.hf-left',  { x: () => -(innerWidth * 0.85), rotation:'-=6', duration:1 }, 0)
+      .to('.hf-right', { x: () =>  (innerWidth * 0.85), rotation:'+=6', duration:1 }, 0)
       .to(frameEls,      { autoAlpha: 0, duration:0.45 }, 0.55);
   }
 }
