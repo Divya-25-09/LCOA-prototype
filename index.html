@@ -620,16 +620,25 @@ function applyMood(t){
    never freeze when the visitor stops scrolling.
    ============================================================ */
 const clock = new THREE.Clock();
-const pos = new THREE.Vector3(), tan = new THREE.Vector3(), look = new THREE.Vector3();
+const pos = new THREE.Vector3(), look = new THREE.Vector3();
 const targetQ = new THREE.Quaternion(), mat4 = new THREE.Matrix4(), flapQ = new THREE.Quaternion();
 const up = new THREE.Vector3(0,1,0);
-const dirXY = new THREE.Vector3();
+const noseDir = new THREE.Vector3();
 const VIEW_UP = new THREE.Vector3(0,0,1);   // camera axis: keeps the back to the viewer
 let NOSE = 1;                                // flip to -1 if it flies tail-first (__dfly.flipNose())
 const teamCards = [...document.querySelectorAll('.t-card')];
 const hud = document.getElementById('hud');
 const bloom = document.getElementById('bloom');
 let flapPhase = 0;
+
+/* --- scroll-velocity pitch: nose up at rest, nose down while scrolling down ---
+   Derived from window.scrollY each frame rather than a Lenis event, same
+   reasoning as the earlier ScrollTrigger sync fix: it has to keep working
+   regardless of what is actually driving the scroll (Lenis, native, touch),
+   and the shared ticker sees every case. */
+let prevScrollY = scrollY, smoothedScrollSpeed = 0, lastMovingAt = 0;
+const IDLE_DWELL = 0.15;     // seconds of near-zero speed before it counts as "stopped"
+const SPEED_EPS  = 3;        // px/sec deadzone, absorbs easing residue near a stop
 
 function smoothstep(a,b,x){ const t = THREE.MathUtils.clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); }
 
@@ -642,7 +651,13 @@ function frame(){
 
   /* --- position along the curve --- */
   curve.getPoint(t, pos);
-  curve.getTangent(t, tan);
+
+  /* --- scroll speed, smoothed, for the nose pitch below --- */
+  const rawSpeed = dt > 0 ? (scrollY - prevScrollY) / dt : 0;   // px/sec, + = scrolling down
+  prevScrollY = scrollY;
+  smoothedScrollSpeed += (rawSpeed - smoothedScrollSpeed) * Math.min(1, dt * 6);
+  if (Math.abs(smoothedScrollSpeed) > SPEED_EPS) lastMovingAt = el;
+  const idle = (el - lastMovingAt) > IDLE_DWELL;
 
   /* idle bob — independent of scroll, damped by mood */
   pos.x += Math.sin(el * 0.73) * 0.10 * mood.bob;
@@ -664,20 +679,20 @@ function frame(){
   fly.scale.setScalar(0.08 + born * 0.92);
   bloom.style.opacity = (1 - smoothstep(0, 0.085, t)) * 0.55;  // softer over paper
 
-  /* --- orient to direction of travel, held upright ---
+  /* --- orient by scroll state, held upright ---
      The legs sit on the underside, so they only come into view when the
      insect is seen edge-on. Keeping its back to the camera shows the wing
-     spread and hides the legs behind the body.
-     Two rules do that: steer using only the screen-plane component of the
-     tangent (no pitch out of plane), and use the view axis +Z as "up", so
-     the dorsal side always faces the camera. Depth still varies via
-     position.z, it just never tips the body.
-     No roll: banking would tip the underside into view. The idle wobble is
-     a yaw about the view axis instead, which stays flat to camera. */
-  dirXY.set(tan.x, tan.y, 0);
-  if (dirXY.lengthSq() < 1e-6) dirXY.set(1, 0, 0);            // degenerate tangent guard
-  dirXY.normalize().multiplyScalar(NOSE);
-  look.copy(pos).add(dirXY);
+     spread and hides the legs behind the body: steer using only the
+     screen-plane component (no pitch out of plane), and use the view axis
+     +Z as "up", so the dorsal side always faces the camera regardless of
+     which way the nose points.
+     Nose direction is driven by scroll state rather than the curve tangent:
+     up while stopped (and while scrolling back up), down while scrolling
+     down. Position still follows the curve; only the pitch is decoupled
+     from it. No roll: banking would tip the underside into view. The idle
+     wobble is a yaw about the view axis instead, which stays flat to camera. */
+  noseDir.set(0, idle || smoothedScrollSpeed <= 0 ? 1 : -1, 0).multiplyScalar(NOSE);
+  look.copy(pos).add(noseDir);
   mat4.lookAt(pos, look, VIEW_UP);
   targetQ.setFromRotationMatrix(mat4);
   fly.quaternion.slerp(targetQ, 1 - Math.pow(0.0015, dt));   // frame-rate independent
@@ -739,6 +754,7 @@ window.__dfly = {
   flipNose(){ NOSE = -NOSE; return NOSE; },          // if it travels tail-first
   setYaw: d => setYaw(d),                            // align the nose to travel
   roll(deg){ fly.rotateZ(THREE.MathUtils.degToRad(deg)); },   // one-off, to inspect other faces
+  get scrollState(){ return { idle: (clock.elapsedTime - lastMovingAt) > IDLE_DWELL, speed: +smoothedScrollSpeed.toFixed(1) }; },
 };
 </script>
 </body>
