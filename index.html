@@ -119,34 +119,14 @@ body{
    media queries add no specificity of their own, so an unprefixed
    `display:none` here silently loses to the base `display:block`. */
 @media (max-width:640px){
-  /* PORTRAIT: bottom only.
-     Nothing sits above the emblem - no botanicals, no stars. Everything
-     that framed the top has been removed, so the upper half is clean
-     paper and the emblem is the only thing in it.
-
-     The botanicals are two corner clusters, not a full-width band. At
-     50vw each they met in the middle and the mirrored halves read as
-     wallpaper; at 42vw there is a real gap between them, so they sit as
-     two corners of a frame instead of one repeating strip. They are also
-     pushed slightly off the outer edges, which crops the sparse stem
-     side of the artwork and leaves the flowers themselves on screen. */
-  #hero{ padding-bottom:22vh; }
-
-  #heroFrame .hf-peony-l, #heroFrame .hf-peony-r{
-    width:42vw; bottom:0;
-    /* the artwork runs to the top of its own bitmap, so an unfaded edge
-       would cut straight across; this dissolves it into the paper */
-    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 42%);
-            mask-image:linear-gradient(to bottom, transparent 0, #000 42%);
-  }
-  #heroFrame .hf-peony-l{ left:-6%;  }
-  #heroFrame .hf-peony-r{ right:-6%; }
-
-  /* every top element off: the two top-corner peonies and both large
-     stars, which were the sparkle sitting above the emblem */
-  #heroFrame .hf-peony-tl, #heroFrame .hf-peony-tr,
-  #heroFrame .hf-star-l1,  #heroFrame .hf-star-r1,
-  #heroFrame .hf-star-l2,  #heroFrame .hf-star-r2{ display:none; }
+  /* PORTRAIT: no frame at all.
+     The botanicals are a desktop treatment. The frame is authored at 2.2:1
+     where full-height panels flank a headline using 45% of the width; on a
+     phone the headline needs 66%, so the same artwork has nowhere to sit
+     that does not either crowd the emblem or read as clipart. Rather than
+     keep reshuffling it, the hero here is the emblem and type on clean
+     paper, with the dragonfly as the only decorative element. */
+  #heroFrame{ display:none; }
 }
 /* Short landscape windows: very little vertical room, so cap the panels
    against width instead of height. */
@@ -266,15 +246,15 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
      is exactly the botanical band measured in the mockup), plus two stars
      per side at their measured percentages. -->
 <div id="heroFrame" aria-hidden="true">
-  <img class="hf hf-left  hf-peony-l"  src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
-  <img class="hf hf-left  hf-peony-tl" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
-  <img class="hf hf-left  hf-star-l1" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
-  <img class="hf hf-left  hf-star-l2" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
+  <img class="hf hf-left  hf-peony-l"  src="images/peonies.webp" width="336" height="617" alt="" decoding="async" loading="lazy">
+  <img class="hf hf-left  hf-peony-tl" src="images/peonies.webp" width="336" height="617" alt="" decoding="async" loading="lazy">
+  <img class="hf hf-left  hf-star-l1" src="images/star.webp"    width="320" height="371" alt="" decoding="async" loading="lazy">
+  <img class="hf hf-left  hf-star-l2" src="images/star.webp"    width="320" height="371" alt="" decoding="async" loading="lazy">
 
-  <img class="hf hf-right hf-peony-r"  src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
-  <img class="hf hf-right hf-peony-tr" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
-  <img class="hf hf-right hf-star-r1" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
-  <img class="hf hf-right hf-star-r2" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
+  <img class="hf hf-right hf-peony-r"  src="images/peonies.webp" width="336" height="617" alt="" decoding="async" loading="lazy">
+  <img class="hf hf-right hf-peony-tr" src="images/peonies.webp" width="336" height="617" alt="" decoding="async" loading="lazy">
+  <img class="hf hf-right hf-star-r1" src="images/star.webp"    width="320" height="371" alt="" decoding="async" loading="lazy">
+  <img class="hf hf-right hf-star-r2" src="images/star.webp"    width="320" height="371" alt="" decoding="async" loading="lazy">
 </div>
 
 <div id="bloom"></div>
