@@ -1,6 +1,6 @@
 # LCOA — dragonfly scroll guide (prototype)
 
-Live: **https://shashankballaya.github.io/LCOA-prototype/**
+Live: **https://shashankballaya.github.io/LCOA-prototype/?ref=team**
 
 A prototype of a 3D dragonfly that flies through the page as a guide,
 introducing each section as you scroll. This is a **feature prototype**, not a
