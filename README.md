@@ -1,6 +1,6 @@
 # LCOA — dragonfly scroll guide (prototype)
 
-Live: **https://prototype.lcoaurelian.in**
+Live: **https://shashankballaya.github.io/LCOA-prototype/**
 
 A prototype of a 3D dragonfly that flies through the page as a guide,
 introducing each section as you scroll. This is a **feature prototype**, not a
@@ -8,8 +8,9 @@ draft of the new site — the copy, imagery and layout are deliberately
 placeholder. What is being reviewed is the flight mechanic and the per-section
 mood shifts.
 
-This is published on a subdomain so it stays entirely separate from the live
-site at lcoaurelian.in.
+This is published from its own repo so it stays entirely separate from the live
+site at lcoaurelian.in. A `prototype.lcoaurelian.in` subdomain is intended but
+is not yet serving, so the GitHub URL above is the one to use for now.
 
 ## What to look at
 
