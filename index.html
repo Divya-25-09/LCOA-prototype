@@ -119,53 +119,34 @@ body{
    media queries add no specificity of their own, so an unprefixed
    `display:none` here silently loses to the base `display:block`. */
 @media (max-width:640px){
-  /* Content shifts up so the bottom band has room to sit under it
-     rather than through the headline. */
-  #hero{ padding-bottom:30vh; }
+  /* PORTRAIT: bottom only.
+     Nothing sits above the emblem - no botanicals, no stars. Everything
+     that framed the top has been removed, so the upper half is clean
+     paper and the emblem is the only thing in it.
 
-  /* The frame is 2.2:1, a phone is the opposite, so the desktop rule
-     (width capped against 34vw) left the panels only ~230px tall and
-     stranded at the bottom - below ALL the content, framing nothing.
-     Here they keep their full height and get CROPPED instead: a fixed
-     height of 100% with object-fit:cover turns each one into a tall
-     botanical strip down its edge, which is what the panels do on
-     desktop. object-position picks the flower-dense part of the art
-     rather than its sparse stem edge. */
-  /* Panels form a continuous band along the BOTTOM rather than running
-     down the sides. On desktop the headline uses 45% of the width so
-     25% panels flank it cleanly; on a phone the same headline needs 66%,
-     so any side panel is forced behind the text. A bottom band keeps
-     the middle clear, which is the point of the frame. 50vw each means
-     the two meet in the middle and read as one band rather than two
-     stranded blobs. */
+     The botanicals are two corner clusters, not a full-width band. At
+     50vw each they met in the middle and the mirrored halves read as
+     wallpaper; at 42vw there is a real gap between them, so they sit as
+     two corners of a frame instead of one repeating strip. They are also
+     pushed slightly off the outer edges, which crops the sparse stem
+     side of the artwork and leaves the flowers themselves on screen. */
+  #hero{ padding-bottom:22vh; }
+
   #heroFrame .hf-peony-l, #heroFrame .hf-peony-r{
-    width:50vw; bottom:0;
-    /* The artwork runs to the top edge of its own bitmap, so a band cut
-       straight across leaves a visible horizontal seam. Fade the top so
-       the botanicals dissolve into the paper instead. */
-    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 30%);
-            mask-image:linear-gradient(to bottom, transparent 0, #000 30%);
+    width:42vw; bottom:0;
+    /* the artwork runs to the top of its own bitmap, so an unfaded edge
+       would cut straight across; this dissolves it into the paper */
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 42%);
+            mask-image:linear-gradient(to bottom, transparent 0, #000 42%);
   }
+  #heroFrame .hf-peony-l{ left:-6%;  }
+  #heroFrame .hf-peony-r{ right:-6%; }
 
-  /* the two small stars are illegible at phone scale, so lift them and
-     drop the smallest rather than leave 16px specks on a panel edge */
-  /* Top corners: the asset's own top is foliage and stems, so anchoring
-     it at y=0 gives the same leafy corner the desktop panels do - no
-     rotation needed. Kept narrower and faded out well above the emblem
-     so the middle stays clear. The left copy inherits scaleX(-1) from
-     .hf-left, so the pair mirrors like the bottom band. */
-  #heroFrame .hf-peony-tl, #heroFrame .hf-peony-tr{
-    display:block; width:40vw; top:0; bottom:auto;
-    -webkit-mask-image:linear-gradient(to bottom, #000 0, #000 18%, transparent 58%);
-            mask-image:linear-gradient(to bottom, #000 0, #000 18%, transparent 58%);
-  }
-  #heroFrame .hf-peony-tl{ left:0; }
-  #heroFrame .hf-peony-tr{ right:0; }
-
-  #heroFrame .hf-star-l1{ left:4%;  top:-3%; width:19vw; }
-  #heroFrame .hf-star-r1{ left:80%; top: 7%; width:16vw; }
-  #heroFrame .hf-star-l2{ display:none; }
-  #heroFrame .hf-star-r2{ left:86%; top:64%; width:8vw; }
+  /* every top element off: the two top-corner peonies and both large
+     stars, which were the sparkle sitting above the emblem */
+  #heroFrame .hf-peony-tl, #heroFrame .hf-peony-tr,
+  #heroFrame .hf-star-l1,  #heroFrame .hf-star-r1,
+  #heroFrame .hf-star-l2,  #heroFrame .hf-star-r2{ display:none; }
 }
 /* Short landscape windows: very little vertical room, so cap the panels
    against width instead of height. */
