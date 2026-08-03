@@ -25,22 +25,21 @@
    nothing else needs to change.
    ============================================================ */
 :root{
-  /* LCOA brand palette. The three paper tones sit deliberately close, so
-     the mood reads through the ACCENT rather than the background. */
-  --mood-energetic-bg:#EBE5D6;  --mood-energetic-ac:#CBA093; /* warm ivory + dusty blush */
-  --mood-reflective-bg:#E5DFCF; --mood-reflective-ac:#ABB49C; /* antique cream + sage green */
-  --mood-functional-bg:#DDD6C7; --mood-functional-ac:#A48D7B; /* soft linen + warm taupe */
-
-  /* live values, written each frame from the scroll timeline */
+  /* live values, written each frame from a continuous 5-stop gradient
+     across the whole page - see GRADIENT_BG/GRADIENT_ACCENT in the JS */
   --bg:#EBE5D6;
   --accent:#CBA093;
 
-  /* Type colour is fixed, never mood-driven. The florals and ornaments are
-     decorative and fail contrast as text (dusty blush is 1.86:1 on ivory),
-     so headings take Slate Blue and body copy Muted Moss, which clears
-     WCAG AA on all three paper tones. */
+  /* Type colour is fixed, never gradient-driven. Two of the five gradient
+     colours fail contrast as body text at full saturation - Vintage Rose
+     3.68:1 and Dusty Blush 2.79:1 against Muted Moss, both under the 4.5:1
+     AA floor - which is why the background gradient uses tinted versions
+     of them (see GRADIENT_BG) while ACCENT keeps the full-strength hex,
+     since accents are never a text background.
+     Slate Blue and Muted Moss clear AA against every one of the tinted
+     background stops. */
   --ink:#5A657C;       /* slate blue - headings */
-  --ink-body:#57614D;  /* muted moss - body copy, AA on every paper tone */
+  --ink-body:#57614D;  /* muted moss - body copy */
   --line:#DDD6C7;      /* soft linen - borders & rules */
   --paper:#FFFFFF;     /* card lift over the paper tones */
 
@@ -515,16 +514,14 @@ const WAYPOINTS = [
 ];
 const SEGMENTS = WAYPOINTS.length - 1;            // 6
 
+/* Mood still drives flap speed and idle-bob damping (unrelated to colour -
+   see GRADIENT_BG/GRADIENT_ACCENT below for the background). */
 const MOODS = {
-  energetic : { bg:'--mood-energetic-bg',  ac:'--mood-energetic-ac',  flap:26, bob:1.00 },
-  reflective: { bg:'--mood-reflective-bg', ac:'--mood-reflective-ac', flap:13, bob:0.42 },
-  functional: { bg:'--mood-functional-bg', ac:'--mood-functional-ac', flap:16, bob:0.30 },
+  energetic : { flap:26, bob:1.00 },
+  reflective: { flap:13, bob:0.42 },
+  functional: { flap:16, bob:0.30 },
 };
-const cs = getComputedStyle(document.documentElement);
-const readVar = n => cs.getPropertyValue(n).trim();
 const SECTION_MOOD = [...document.querySelectorAll('[data-mood]')].map(el => el.dataset.mood);
-const MOOD_BG = SECTION_MOOD.map(m => readVar(MOODS[m].bg));
-const MOOD_AC = SECTION_MOOD.map(m => readVar(MOODS[m].ac));
 const MOOD_FLAP = SECTION_MOOD.map(m => MOODS[m].flap);
 const MOOD_BOB  = SECTION_MOOD.map(m => MOODS[m].bob);
 
@@ -594,20 +591,40 @@ if (!reduce){
   });
 }
 
-/* mood colours are derived from the SAME t, so they can never
-   drift out of step with the flight */
+/* ============================================================
+   BACKGROUND GRADIENT — five brand colours as one continuous wash
+   across the whole page (0..1), independent of section mood (which
+   only drives flap speed / idle-bob damping, above).
+   Vintage Rose and Dusty Blush measure 3.68:1 and 2.79:1 against
+   Muted Moss body text at full saturation - both under the 4.5:1 AA
+   floor for regular text. Tinted 40%/60% toward paper they clear
+   4.7:1+ while keeping the same hue. GRADIENT_ACCENT keeps the raw,
+   full-strength hex since accents (borders, glow, discs) are never a
+   text background - the same scope the source palette itself gives
+   these two ("florals", not paper tones). */
+const GRADIENT_BG     = ['#EBE5D6','#E5DFCF','#DDD6C7','#E6D8D0','#EAD9D4'];
+const GRADIENT_ACCENT = ['#EBE5D6','#E5DFCF','#DDD6C7','#D6BEB1','#CBA093'];
+const ACCENT_LEAD = 0.12;   // accent samples slightly ahead of bg, so it's never flatly identical
+
 const tmpA = new THREE.Color(), tmpB = new THREE.Color(), tmpC = new THREE.Color();
+function sampleStops(stops, t){
+  const n = stops.length - 1;
+  const s = THREE.MathUtils.clamp(t, 0, 1) * n;
+  const i = Math.min(Math.floor(s), n - 1);
+  tmpA.set(stops[i]); tmpB.set(stops[i+1]);
+  return tmpC.copy(tmpA).lerp(tmpB, s - i);
+}
+
+function applyGradient(t){
+  document.documentElement.style.setProperty('--bg', '#' + sampleStops(GRADIENT_BG, t).getHexString());
+  const ac = '#' + sampleStops(GRADIENT_ACCENT, Math.min(t + ACCENT_LEAD, 1)).getHexString();
+  document.documentElement.style.setProperty('--accent', ac);
+  glow.color.set(ac);
+}
+
 function applyMood(t){
   const s = Math.min(t * SEGMENTS, SEGMENTS - 1e-6);
   const i = Math.floor(s), f = s - i;
-  tmpA.set(MOOD_BG[i]); tmpB.set(MOOD_BG[i+1]);
-  tmpC.copy(tmpA).lerp(tmpB, f);
-  document.documentElement.style.setProperty('--bg', '#' + tmpC.getHexString());
-  tmpA.set(MOOD_AC[i]); tmpB.set(MOOD_AC[i+1]);
-  tmpC.copy(tmpA).lerp(tmpB, f);
-  const ac = '#' + tmpC.getHexString();
-  document.documentElement.style.setProperty('--accent', ac);
-  glow.color.set(ac);
   return {
     flap: THREE.MathUtils.lerp(MOOD_FLAP[i], MOOD_FLAP[i+1], f),
     bob : THREE.MathUtils.lerp(MOOD_BOB[i],  MOOD_BOB[i+1],  f),
@@ -647,6 +664,7 @@ function frame(){
   const el = clock.elapsedTime;
   const t  = state.t;
 
+  applyGradient(t);
   const mood = applyMood(t);
 
   /* --- position along the curve --- */
@@ -734,6 +752,7 @@ function frame(){
    ============================================================ */
 if (reduce){
   state.t = 0.12;
+  applyGradient(state.t);
   applyMood(state.t);
   curve.getPoint(state.t, pos);
   fly.position.copy(pos);
