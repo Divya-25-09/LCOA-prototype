@@ -145,29 +145,34 @@ body{
      outermost blooms read as nearest the lens, so they blur hardest. In vw
      so it holds proportion across phone sizes. Measured against the mockup,
      the florals sit ~2.5x softer than the centre. */
-  #heroFrame .hfm-b1{ filter:blur(0.55vw); }
-  #heroFrame .hfm-b2{ filter:blur(0.85vw); }
-  #heroFrame .hfm-b3{ filter:blur(1.15vw); }
-  #heroFrame .hfm-b4{ filter:blur(1.60vw); }
+  #heroFrame .hfm-b1{ filter:blur(0.22vw); }
+  #heroFrame .hfm-b2{ filter:blur(0.36vw); }
+  #heroFrame .hfm-b3{ filter:blur(0.52vw); }
+  #heroFrame .hfm-b4{ filter:blur(0.72vw); }
 
-  /* top band - dense, above the emblem */
-  #heroFrame .hfm-mint-tl { width:58%; left:-16%;  top:-5%;  }
-  #heroFrame .hfm-peony-tl{ width:34%; left: 22%;  top:-14%; }
-  #heroFrame .hfm-peony-tr{ width:38%; right:-10%; top:-10%; }
-  #heroFrame .hfm-blue-tr { width:58%; right:-18%; top:  3%; }
+  /* Blooms are large and pushed well past the frame edges so they crop
+     rather than float, and they overlap each other - that is what makes the
+     mockup's ring read as one continuous mass instead of separate cut-outs.
+     The offsets are big because the peony asset is tall (aspect 0.545), so
+     a wide one is very tall; pushing it further off-frame keeps its visible
+     band inside the top/bottom zones without shrinking the flower. */
+
+  /* top band - ends by ~33%, above the emblem */
+  #heroFrame .hfm-mint-tl { width:62%; left:-18%;  top: -6%; }
+  #heroFrame .hfm-peony-tl{ width:42%; left: 16%;  top:-16%; }
+  #heroFrame .hfm-peony-tr{ width:46%; right: -8%; top:-14%; }
+  #heroFrame .hfm-blue-tr { width:66%; right:-20%; top:  0%; }
 
   /* middle - edges only, so the emblem and headline stay clear */
-  #heroFrame .hfm-peony-ml{ width:36%; left:-22%;  top: 22%; }
-  #heroFrame .hfm-blue-mr { width:42%; right:-22%; top: 20%; }
-  #heroFrame .hfm-mint-mr { width:24%; right: -6%; top: 44%; }
+  #heroFrame .hfm-peony-ml{ width:44%; left:-24%;  top: 20%; }
+  #heroFrame .hfm-blue-mr { width:50%; right:-26%; top: 16%; }
+  #heroFrame .hfm-mint-mr { width:30%; right: -8%; top: 40%; }
 
-  /* bottom band - dense, below the headline. Sized to overlap each other
-     so the band reads as one mass of blooms rather than separate cut-outs,
-     the way the mockup's lower edge does. */
-  #heroFrame .hfm-peony-bl{ width:50%; left:-18%;  bottom:-12%; }
-  #heroFrame .hfm-blue-bl { width:50%; left:  2%;  bottom:-10%; }
-  #heroFrame .hfm-peony-br{ width:46%; right:-14%; bottom:-14%; }
-  #heroFrame .hfm-blue-br { width:42%; right: -2%; bottom:  2%; }
+  /* bottom band - starts by ~79%, below the headline */
+  #heroFrame .hfm-peony-bl{ width:58%; left:-20%;  bottom:-28%; }
+  #heroFrame .hfm-blue-bl { width:56%; left:  0%;  bottom: -8%; }
+  #heroFrame .hfm-peony-br{ width:52%; right:-16%; bottom:-24%; }
+  #heroFrame .hfm-blue-br { width:48%; right: -6%; bottom: -6%; }
 }
 /* Short landscape windows: very little vertical room, so cap the panels
    against width instead of height. */
