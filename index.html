@@ -528,15 +528,39 @@ const MOOD_AC = SECTION_MOOD.map(m => readVar(MOODS[m].ac));
 const MOOD_FLAP = SECTION_MOOD.map(m => MOODS[m].flap);
 const MOOD_BOB  = SECTION_MOOD.map(m => MOODS[m].bob);
 
+const bloomEl = document.getElementById('bloom');
+
+/* Where the emblem's own illustrated dragonfly sits, in the same viewport
+   fractions the waypoints use. Measured from the logo rather than hard-coded
+   so it stays right at any viewport size. Page coords (rect + scrollY) keep
+   it correct even if the window is resized while scrolled away from the hero. */
+function emblemAnchor(){
+  const el = document.querySelector('.hero-logo');
+  if (!el || !el.offsetWidth) return null;
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + scrollY + r.height * 0.34;   // the emblem's dragonfly, not its centre
+  return { fx: (cx - innerWidth/2) / (innerWidth/2),
+           fy: (innerHeight/2 - cy) / (innerHeight/2) };
+}
+
 let curve;
 function buildCurve(){
+  const anchor = emblemAnchor();
   curve = new THREE.CatmullRomCurve3(
-    WAYPOINTS.map(w => {
+    WAYPOINTS.map((w, i) => {
       const { hh, hw } = halfExtents(w.z);
-      return new THREE.Vector3(w.fx * hw, w.fy * hh, w.z);
+      // waypoint 0 rides the emblem so the dragonfly emerges out of it
+      const fx = (i === 0 && anchor) ? anchor.fx : w.fx;
+      const fy = (i === 0 && anchor) ? anchor.fy : w.fy;
+      return new THREE.Vector3(fx * hw, fy * hh, w.z);
     }),
     false, 'catmullrom', 0.5
   );
+  if (anchor){                       // park the bloom on the emblem too
+    bloomEl.style.left = `${50 + anchor.fx * 50}%`;
+    bloomEl.style.top  = `${50 - anchor.fy * 50}%`;
+  }
 }
 
 function resize(){
@@ -549,6 +573,13 @@ function resize(){
 }
 addEventListener('resize', resize);
 resize();
+
+/* The hero is flex-centred, so the emblem's Y position depends on the total
+   height of the hero content - which shifts when the display font finishes
+   loading. Re-anchor once that has settled, and again on full load, or the
+   dragonfly emerges from where the emblem *was*. */
+document.fonts && document.fonts.ready.then(buildCurve);
+addEventListener('load', buildCurve);
 
 /* ============================================================
    5. MASTER SCROLLTRIGGER — one scrubbed timeline, whole page.
@@ -627,9 +658,11 @@ function frame(){
   fly.position.copy(pos);
 
   /* --- emergence from the light bloom at the very start --- */
-  const born = smoothstep(0, 0.045, t);
-  fly.scale.setScalar(0.35 + born * 0.65);
-  bloom.style.opacity = (1 - smoothstep(0, 0.07, t)) * 0.55;   // softer over paper
+  /* Emerge FROM the emblem: start almost nothing, at the emblem's own
+     dragonfly, and swell to full size as the path carries it clear. */
+  const born = smoothstep(0, 0.055, t);
+  fly.scale.setScalar(0.08 + born * 0.92);
+  bloom.style.opacity = (1 - smoothstep(0, 0.085, t)) * 0.55;  // softer over paper
 
   /* --- orient to direction of travel, held upright ---
      The legs sit on the underside, so they only come into view when the
