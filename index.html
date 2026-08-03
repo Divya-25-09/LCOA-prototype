@@ -369,7 +369,7 @@ const WING_ROOTS = [        // fore/hind pair per side
   { name:'wing.l.004_046', side:-1, pair:1 },
 ];
 const normName = n => n.toLowerCase().replace(/[^a-z0-9]/g, '');
-const BODY_LENGTH = 1.5;    // target world size (nose to tail), in scene units
+const BODY_LENGTH = 1.0;    // target world size (nose to tail), in scene units
 
 if (!new URLSearchParams(location.search).has('placeholder')){
   new GLTFLoader().load('models/dragonfly/scene.gltf', gltf => {
