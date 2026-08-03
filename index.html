@@ -74,10 +74,7 @@ body{
 
 /* ---- decorative hero frame ----
    Fixed layer at z-index 1, under the sections (z-index 2) so the botanicals
-   sit behind the emblem and headline. Every size is clamp(px, vw, px): the
-   vw term makes it scale with the viewport, the two bounds stop the peonies
-   swallowing a phone or looking lost on a 4K monitor. Positions are % so
-   they stay pinned to the corners at any aspect ratio. */
+   sit behind the emblem and headline. */
 #heroFrame{
   position:fixed; inset:0; z-index:1;
   pointer-events:none; overflow:hidden;
@@ -85,42 +82,60 @@ body{
 #heroFrame .hf{
   position:absolute; display:block; height:auto;
   will-change:transform, opacity;   /* these are the only animated properties */
+  /* Layer blur, so the emblem and headline hold focus. Calibrated against
+     the mockup rather than guessed: matching the rendered edge sharpness of
+     the top-left star puts it at 1.5px on a 1901px-wide frame, i.e. 0.079vw.
+     Applied per element rather than to the container - a filter on the
+     parent would force the whole layer to re-blur on every animation frame,
+     whereas each image can be blurred once and then just transformed. */
+  filter:blur(clamp(0.5px,0.079vw,2px));
 }
-/* Sized in vmin, not vw. The source mockup is a wide 2.2:1 banner, where
-   26vw corner art reads as a delicate frame; on a squarer or shorter window
-   that same 26vw closes in on the headline. vmin ties the art to the SHORTER
-   axis, so it stays a frame at every aspect ratio. */
-.hf-peony-bl{ width:clamp(150px,25vmin,400px); left:-8%;  bottom:-12%; }
-.hf-peony-tl{ width:clamp(120px,19vmin,330px); left:-9%;  top:-11%;    }
-.hf-peony-br{ width:clamp(150px,25vmin,400px); right:-8%; bottom:-12%; }
-.hf-peony-tr{ width:clamp(120px,19vmin,330px); right:-9%; top:-11%;    }
+/* Positions and sizes are the ones measured off the Figma frame
+   (1901x866), expressed as % so the composition holds as the hero
+   resizes. The vw terms below reproduce the mockup's pixel sizes exactly
+   at 1901px wide; the px floors stop the stars vanishing on a phone.
 
-.hf-cloud-l{ width:clamp(120px,19vmin,340px); left:5%;  top:17%; opacity:.9; }
-.hf-cloud-r{ width:clamp(130px,21vmin,370px); right:4%; top:5%;  opacity:.9; }
+   PEONY PANELS: one per side, full frame height, hugging the edge.
+   The asset is 336x617 (aspect 0.5446), so at full height it is 472px
+   wide = 24.8% of the frame - which is exactly the botanical band width
+   measured in the mockup. width is min(54.46vh, 40vw): the first term
+   keeps it exactly full-height, the second caps it on narrow screens
+   where a full-height panel would otherwise be wider than the phone. */
+.hf-peony-l{ width:min(54.46vh,40vw); left:0;  bottom:0; }
+.hf-peony-r{ width:min(54.46vh,40vw); right:0; bottom:0; }
 
-.hf-star-l1{ width:clamp(38px,6vmin,110px);   left:16%; top:2%;     }
-.hf-star-r1{ width:clamp(34px,5.5vmin,100px); right:1%; top:15%;    }
-.hf-star-l2{ width:clamp(20px,3.2vmin,56px);  left:3%;  bottom:20%; }
-.hf-star-r2{ width:clamp(22px,3.6vmin,62px);  right:4%; bottom:19%; }
+/* opacity .38 is measured, not picked: sampling a clear patch of the
+   mockup's left cloud and solving  target = bg + o*(asset - bg)  gives
+   o = 0.34..0.39 on the green and blue channels. (The red channel returns
+   a nonsense 2.06 because the cloud's red is nearly identical to the
+   background's, so the denominator collapses - ignore it.) */
+.hf-cloud-l{ width:clamp(120px,22.5vw,430px); left:6.8%;  top:16.7%; opacity:.38; }
+.hf-cloud-r{ width:clamp(120px,22.4vw,426px); left:72.4%; top: 1.5%; opacity:.38; }
 
-/* Phones: the clouds and the two large stars crowd a narrow frame, so drop
-   them and keep the peony corners, which are what actually read as a frame. */
+.hf-star-l1{ width:clamp(52px,11.15vw,212px); left:10.57%; top:-8.78%; }
+.hf-star-l2{ width:clamp(16px, 2.50vw, 47px); left: 2.42%; top:73.56%; }
+.hf-star-r1{ width:clamp(44px, 9.02vw,172px); left:93.90%; top: 9.82%; }
+.hf-star-r2{ width:clamp(26px, 4.89vw, 93px); left:92.74%; top:71.48%; }
+
 /* NB: these need the #heroFrame prefix. The base rule above is
    `#heroFrame .hf` (id + class), which outranks a bare `.hf-cloud-l` -
    media queries add no specificity of their own, so an unprefixed
    `display:none` here silently loses to the base `display:block`. */
 @media (max-width:640px){
-  #heroFrame .hf-cloud-l, #heroFrame .hf-cloud-r,
-  #heroFrame .hf-star-l1, #heroFrame .hf-star-r1{ display:none; }
-  #heroFrame .hf-peony-bl, #heroFrame .hf-peony-br{ width:clamp(130px,36vw,230px); }
-  #heroFrame .hf-peony-tl, #heroFrame .hf-peony-tr{ width:clamp(105px,28vw,185px); }
+  /* The frame is 2.2:1; a phone is the opposite. Keep every element -
+     the composition is the point - but pull the panels in and let the
+     clouds sit lighter so the emblem still owns the middle. */
+  #heroFrame .hf-peony-l, #heroFrame .hf-peony-r{ width:min(54.46vh,34vw); }
+  #heroFrame .hf-cloud-l{ left:-2%;  top:14%; opacity:.32; }
+  #heroFrame .hf-cloud-r{ left:56%;  top: 2%; opacity:.32; }
+  #heroFrame .hf-star-l1{ left:6%;  top:-4%; }
+  #heroFrame .hf-star-r1{ left:82%; top: 8%; }
 }
-/* Short landscape windows: the headline has very little vertical room, so
-   pull the corner art right back rather than let it meet in the middle. */
+/* Short landscape windows: very little vertical room, so cap the panels
+   against width instead of height and drop the clouds. */
 @media (max-height:520px){
-  #heroFrame .hf-peony-bl, #heroFrame .hf-peony-br{ width:clamp(110px,17vmin,220px); }
-  #heroFrame .hf-peony-tl, #heroFrame .hf-peony-tr{ width:clamp(100px,15vmin,190px); }
-  #heroFrame .hf-cloud-l,  #heroFrame .hf-cloud-r{ display:none; }
+  #heroFrame .hf-peony-l, #heroFrame .hf-peony-r{ width:min(54.46vh,22vw); }
+  #heroFrame .hf-cloud-l, #heroFrame .hf-cloud-r{ display:none; }
 }
 
 /* hero light bloom the dragonfly emerges from */
@@ -226,19 +241,23 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
      Fixed rather than ScrollTrigger-pinned on purpose: pinning injects a
      spacer that makes the document taller, and the dragonfly's waypoint
      mapping assumes every section is exactly 100vh. Fixed gives the same
-     stuck-to-viewport result with zero layout change. -->
-<div id="heroFrame" aria-hidden="true">
-  <img class="hf hf-left  hf-peony-bl" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
-  <img class="hf hf-left  hf-peony-tl" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
-  <img class="hf hf-left  hf-cloud-l"  src="images/cloud.webp"   width="376" height="176" alt="" decoding="async">
-  <img class="hf hf-left  hf-star-l1"  src="images/star.webp"    width="320" height="371" alt="" decoding="async">
-  <img class="hf hf-left  hf-star-l2"  src="images/star.webp"    width="320" height="371" alt="" decoding="async">
+     stuck-to-viewport result with zero layout change.
 
-  <img class="hf hf-right hf-peony-br" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
-  <img class="hf hf-right hf-peony-tr" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
-  <img class="hf hf-right hf-cloud-r"  src="images/cloud.webp"   width="376" height="176" alt="" decoding="async">
-  <img class="hf hf-right hf-star-r1"  src="images/star.webp"    width="320" height="371" alt="" decoding="async">
-  <img class="hf hf-right hf-star-r2"  src="images/star.webp"    width="320" height="371" alt="" decoding="async">
+     Composition measured from the Figma frame (1901x866) rather than
+     eyeballed: each side is ONE full-height peony panel anchored to the
+     edge (the asset at full frame height is 472px = 24.8% of width, which
+     is exactly the botanical band measured in the mockup), plus one cloud
+     and two stars per side at their measured percentages. -->
+<div id="heroFrame" aria-hidden="true">
+  <img class="hf hf-left  hf-peony-l" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
+  <img class="hf hf-left  hf-cloud-l" src="images/cloud.webp"   width="457" height="364" alt="" decoding="async">
+  <img class="hf hf-left  hf-star-l1" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
+  <img class="hf hf-left  hf-star-l2" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
+
+  <img class="hf hf-right hf-peony-r" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
+  <img class="hf hf-right hf-cloud-r" src="images/cloud.webp"   width="457" height="364" alt="" decoding="async">
+  <img class="hf hf-right hf-star-r1" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
+  <img class="hf hf-right hf-star-r2" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
 </div>
 
 <div id="bloom"></div>
@@ -677,12 +696,12 @@ if (!reduce){
    dragonfly's section<->waypoint mapping. Fixed positioning already
    holds the frame to the viewport.
    ============================================================ */
-/* Mirroring is presentation, not motion, so it happens regardless of
-   prefers-reduced-motion - otherwise the right-hand art would sit unmirrored
-   for those users. Only the scroll animation below is gated. */
-gsap.set('.hf-right', { scaleX: -1 });
-gsap.set('.hf-peony-tl', { rotation: 180 });
-gsap.set('.hf-peony-tr', { rotation: 180, scaleX: -1 });
+/* In the mockup the RIGHT panel is the asset's natural orientation - foliage
+   reaching to the top-right - and the left side is its mirror, so it is the
+   left group that gets flipped, not the right.
+   Mirroring is presentation, not motion, so it happens regardless of
+   prefers-reduced-motion; only the scroll animation below is gated. */
+gsap.set('.hf-left', { scaleX: -1 });
 
 if (!reduce){
   const frameEls = gsap.utils.toArray('#heroFrame .hf');
