@@ -163,22 +163,31 @@ body{
   #heroFrame .hfm-b3{ filter:blur(0.48vw); }
   #heroFrame .hfm-b4{ filter:blur(0.66vw); }
 
-  /* top band - above the emblem */
-  #heroFrame .hfm-mint-tl { width:40%; left: -8%; top: -3%; }
-  #heroFrame .hfm-cream-tc{ width:42%; height:22%; left:16%; top: 0%; }
-  #heroFrame .hfm-pink-tr { width:38%; height:20%; right:18%; top:-4%; }
-  #heroFrame .hfm-blue-tr { width:48%; right:-10%; top:  2%; }
+  /* Denser ring. Clear zone measured from the live layout: the emblem
+     occupies y 33-52% at x 29-71%, and the headline y 63-67% at x 17-83%.
+     Everything above 33% and below 67% can run full width; between those
+     the blooms stay outside x 22%/78% so the centre reads clean. */
+
+  /* top band - full width above the emblem */
+  #heroFrame .hfm-mint-tl { width:46%; left:-10%; top: -5%; }
+  #heroFrame .hfm-cream-tc{ width:46%; height:24%; left: 12%; top:-3%; }
+  #heroFrame .hfm-pink-tc2{ width:34%; height:18%; left: 30%; top:12%; }
+  #heroFrame .hfm-pink-tr { width:42%; height:22%; right:14%; top:-5%; }
+  #heroFrame .hfm-blue-tr { width:54%; right:-12%; top:  0%; }
 
   /* middle - edges only, so the emblem and headline stay clear */
-  #heroFrame .hfm-pink-ml { width:34%; height:30%; left: -8%; top:22%; }
-  #heroFrame .hfm-pink-mr { width:34%; height:26%; right:-8%; top:26%; }
-  #heroFrame .hfm-mint-mr { width:26%; right:-6%; top:48%; }
-  #heroFrame .hfm-cream-bl{ width:32%; height:22%; left: -8%; top:54%; }
+  #heroFrame .hfm-pink-ml { width:38%; height:32%; left:-10%; top:20%; }
+  #heroFrame .hfm-pink-mr { width:38%; height:30%; right:-10%; top:24%; }
+  #heroFrame .hfm-mint-mr { width:28%; right:-8%; top:44%; }
+  #heroFrame .hfm-cream-bl{ width:34%; height:24%; left:-10%; top:50%; }
+  #heroFrame .hfm-cream-mr{ width:32%; height:22%; right:-8%; top:52%; }
 
-  /* bottom band - below the headline */
-  #heroFrame .hfm-pink-bl { width:40%; height:24%; left: -8%; bottom: 0%; }
-  #heroFrame .hfm-cream-br{ width:38%; height:24%; right:-6%; bottom: 4%; }
-  #heroFrame .hfm-blue-bc { width:40%; left:24%; bottom:-8%; }
+  /* bottom band - full width below the headline */
+  #heroFrame .hfm-pink-bl { width:44%; height:26%; left:-10%; bottom:-2%; }
+  #heroFrame .hfm-mint-bl { width:30%; left: 16%; bottom: 8%; }
+  #heroFrame .hfm-pink-bc { width:36%; height:22%; left: 34%; bottom:-6%; }
+  #heroFrame .hfm-cream-br{ width:42%; height:26%; right:-8%; bottom: 2%; }
+  #heroFrame .hfm-blue-bc { width:46%; left: 26%; bottom:-12%; }
 }
 /* Short landscape windows: very little vertical room, so cap the panels
    against width instead of height. */
@@ -324,12 +333,16 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
   <div class="hfm hfm-left  hfm-bloom hfm-pink  hfm-pink-ml  hfm-b3"></div>
   <div class="hfm hfm-left  hfm-bloom hfm-cream hfm-cream-bl hfm-b2"></div>
   <div class="hfm hfm-left  hfm-bloom hfm-pink  hfm-pink-bl  hfm-b3"></div>
+  <div class="hfm hfm-left  hfm-bloom hfm-pink  hfm-pink-tc2 hfm-b2"></div>
+  <div class="hfm hfm-left  hfm-bloom hfm-pink  hfm-pink-bc  hfm-b3"></div>
+  <img class="hfm hfm-left  hfm-mint-bl  hfm-b2" src="images/bloom-mint.webp" width="375" height="499" alt="" decoding="async" loading="lazy">
 
   <div class="hfm hfm-right hfm-bloom hfm-pink  hfm-pink-tr  hfm-b2"></div>
   <img class="hfm hfm-right hfm-blue-tr  hfm-b3" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
   <div class="hfm hfm-right hfm-bloom hfm-pink  hfm-pink-mr  hfm-b2"></div>
   <img class="hfm hfm-right hfm-mint-mr  hfm-b1" src="images/bloom-mint.webp" width="375" height="499" alt="" decoding="async" loading="lazy">
   <div class="hfm hfm-right hfm-bloom hfm-cream hfm-cream-br hfm-b2"></div>
+  <div class="hfm hfm-right hfm-bloom hfm-cream hfm-cream-mr hfm-b2"></div>
   <img class="hfm hfm-right hfm-blue-bc  hfm-b3" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
 </div>
 
