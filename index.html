@@ -25,15 +25,24 @@
    nothing else needs to change.
    ============================================================ */
 :root{
-  --mood-energetic-bg:#1d2b1f;  --mood-energetic-ac:#d8a24a;
-  --mood-reflective-bg:#16212b; --mood-reflective-ac:#7fa8a0;
-  --mood-functional-bg:#101312; --mood-functional-ac:#9fb3a0;
+  /* LCOA brand palette. The three paper tones sit deliberately close, so
+     the mood reads through the ACCENT rather than the background. */
+  --mood-energetic-bg:#EBE5D6;  --mood-energetic-ac:#CBA093; /* warm ivory + dusty blush */
+  --mood-reflective-bg:#E5DFCF; --mood-reflective-ac:#ABB49C; /* antique cream + sage green */
+  --mood-functional-bg:#DDD6C7; --mood-functional-ac:#A48D7B; /* soft linen + warm taupe */
 
   /* live values, written each frame from the scroll timeline */
-  --bg:#1d2b1f;
-  --accent:#d8a24a;
-  --ink:#eef1ea;
-  --ink-dim:#eef1ea99;
+  --bg:#EBE5D6;
+  --accent:#CBA093;
+
+  /* Type colour is fixed, never mood-driven. The florals and ornaments are
+     decorative and fail contrast as text (dusty blush is 1.86:1 on ivory),
+     so headings take Slate Blue and body copy Muted Moss, which clears
+     WCAG AA on all three paper tones. */
+  --ink:#5A657C;       /* slate blue - headings */
+  --ink-body:#57614D;  /* muted moss - body copy, AA on every paper tone */
+  --line:#DDD6C7;      /* soft linen - borders & rules */
+  --paper:#FFFFFF;     /* card lift over the paper tones */
 
   /* same roles as the live site: display / sans / serif / script */
   --f-display:'Birds of Paradise','Birds of Paradise  Personal use','Cormorant Garamond',serif;
@@ -50,7 +59,7 @@ html.lenis,html.lenis body{height:auto}
 
 body{
   background:var(--bg);
-  color:var(--ink);
+  color:var(--ink-body);
   font-family:var(--f-sans);
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
@@ -71,10 +80,10 @@ body{
   transform:translate(-50%,-50%);
   border-radius:50%;
   background:radial-gradient(circle,
-    color-mix(in srgb,var(--accent) 55%,transparent) 0%,
-    color-mix(in srgb,var(--accent) 14%,transparent) 38%,
-    transparent 70%);
-  filter:blur(12px);
+    color-mix(in srgb,var(--accent) 62%,transparent) 0%,
+    color-mix(in srgb,var(--accent) 20%,transparent) 40%,
+    transparent 72%);
+  filter:blur(18px);
   pointer-events:none; z-index:40; opacity:0;
 }
 
@@ -89,35 +98,35 @@ section{
 .eyebrow{
   font-family:var(--f-sans); font-weight:500;
   font-size:clamp(.6rem,1.4vw,.72rem); letter-spacing:.42em; text-transform:uppercase;
-  color:var(--accent); margin:0 0 1.4rem;
+  color:var(--ink-body); margin:0 0 1.4rem;
 }
-h1{font-family:var(--f-display); font-weight:400; font-size:clamp(2rem,7.6vw,5.4rem); letter-spacing:.01em; margin:0; line-height:1.0}
-h2{font-family:var(--f-display); font-weight:500; font-size:clamp(2rem,6vw,3.6rem); line-height:1.08; margin:0 0 1.2rem}
-p{font-family:var(--f-serif); font-size:clamp(1.05rem,2.2vw,1.35rem); color:var(--ink-dim); max-width:42ch; line-height:1.7; margin:0 auto}
+h1{font-family:var(--f-display); font-weight:400; font-size:clamp(2rem,7.6vw,5.4rem); letter-spacing:.01em; margin:0; line-height:1.0; color:var(--ink)}
+h2{font-family:var(--f-display); font-weight:500; font-size:clamp(2rem,6vw,3.6rem); line-height:1.08; margin:0 0 1.2rem; color:var(--ink)}
+p{font-family:var(--f-serif); font-size:clamp(1.05rem,2.2vw,1.35rem); color:var(--ink-body); max-width:42ch; line-height:1.7; margin:0 auto}
 .logo-mark{
   width:120px;height:120px;border-radius:50%;
-  border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
+  border:1px solid var(--accent);
   display:grid;place-items:center;margin:0 auto 2.2rem;
-  font-family:var(--f-display);font-size:2.2rem;letter-spacing:.06em;color:var(--accent);
+  font-family:var(--f-display);font-size:2.2rem;letter-spacing:.06em;color:var(--ink);
 }
 
 /* ---- team: cards revealed by the dragonfly's x-position ---- */
 .team-row{display:flex;gap:1.4rem;flex-wrap:wrap;justify-content:center;margin-top:3rem}
 .t-card{
   width:150px;padding:1.6rem 1rem;border-radius:14px;
-  background:color-mix(in srgb,var(--accent) 7%,transparent);
-  border:1px solid color-mix(in srgb,var(--accent) 18%,transparent);
+  background:color-mix(in srgb,var(--paper) 58%,transparent);
+  border:1px solid var(--line);
   opacity:0;transform:translateY(28px) scale(.96);
   transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1);
 }
 .t-card.lit{opacity:1;transform:none}
-.t-card .av{width:56px;height:56px;border-radius:50%;margin:0 auto .8rem;background:color-mix(in srgb,var(--accent) 26%,transparent)}
-.t-card .nm{font-family:var(--f-script);font-size:1.35rem;line-height:1}
-.t-card .ro{font-family:var(--f-sans);font-weight:500;font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-top:.35rem}
+.t-card .av{width:56px;height:56px;border-radius:50%;margin:0 auto .8rem;background:color-mix(in srgb,var(--accent) 70%,var(--paper))}
+.t-card .nm{font-family:var(--f-script);font-size:1.35rem;line-height:1;color:var(--ink)}
+.t-card .ro{font-family:var(--f-sans);font-weight:500;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-body);margin-top:.35rem}
 
 /* ---- gallery: cards at varying depth, faked with scale/blur/opacity ---- */
 .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.2rem;margin-top:3rem;width:min(900px,100%)}
-.g-card{aspect-ratio:4/5;border-radius:12px;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 22%,transparent),transparent);border:1px solid color-mix(in srgb,var(--accent) 14%,transparent)}
+.g-card{aspect-ratio:4/5;border-radius:12px;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 62%,var(--paper)),color-mix(in srgb,var(--accent) 18%,var(--paper)));border:1px solid var(--line)}
 .g-card:nth-child(2){transform:scale(.9) translateY(18px);filter:blur(1px);opacity:.72}
 .g-card:nth-child(3){transform:scale(1.04) translateY(-10px)}
 .g-card:nth-child(4){transform:scale(.86) translateY(26px);filter:blur(1.6px);opacity:.6}
@@ -125,26 +134,26 @@ p{font-family:var(--f-serif); font-size:clamp(1.05rem,2.2vw,1.35rem); color:var(
 
 /* ---- events ---- */
 .ev{display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center;margin-top:3rem}
-.e-card{width:210px;padding:1.6rem;border-radius:14px;text-align:left;border:1px solid color-mix(in srgb,var(--accent) 16%,transparent)}
-.e-card.featured{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,transparent)}
-.e-card .dt{font-family:var(--f-sans);font-weight:500;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
-.e-card .ti{font-family:var(--f-serif);font-weight:600;margin-top:.6rem;font-size:1.25rem}
+.e-card{width:210px;padding:1.6rem;border-radius:14px;text-align:left;border:1px solid var(--line);background:color-mix(in srgb,var(--paper) 45%,transparent)}
+.e-card.featured{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 26%,var(--paper))}
+.e-card .dt{font-family:var(--f-sans);font-weight:500;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-body)}
+.e-card .ti{font-family:var(--f-serif);font-weight:600;margin-top:.6rem;font-size:1.25rem;color:var(--ink)}
 
 /* ---- form: dragonfly rests to the SIDE, never over the inputs ---- */
 #form .wrap{width:min(440px,100%);margin-right:auto;margin-left:0;text-align:left}
 @media(min-width:900px){ #form{align-items:flex-start;padding-left:12vw} }
-label{display:block;font-family:var(--f-sans);font-weight:500;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:1.4rem 0 .5rem}
+label{display:block;font-family:var(--f-sans);font-weight:500;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-body);margin:1.4rem 0 .5rem}
 input{
   width:100%;padding:.85rem 1rem;border-radius:9px;
-  border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);
-  background:color-mix(in srgb,var(--ink) 5%,transparent);
-  color:var(--ink);font:inherit;
+  border:1px solid var(--line);
+  background:color-mix(in srgb,var(--paper) 62%,transparent);
+  color:var(--ink-body);font:inherit;
 }
-input:focus{outline:none;border-color:var(--accent)}
-button.sub{margin-top:2rem;padding:.9rem 2rem;border-radius:100px;border:0;background:var(--accent);color:#10130f;font:inherit;font-weight:600;cursor:pointer}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+button.sub{margin-top:2rem;padding:.9rem 2rem;border-radius:100px;border:0;background:var(--ink);color:#EBE5D6;font:inherit;font-weight:600;cursor:pointer}
 
-.credit{font-size:.72rem;line-height:1.6;margin-top:1.6rem;opacity:.62;max-width:40ch}
-.credit a{color:var(--accent)}
+.credit{font-size:.72rem;line-height:1.6;margin-top:1.6rem;color:var(--ink-body);opacity:.85;max-width:40ch}
+.credit a{color:var(--ink)}
 footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding:4rem 6vw;position:relative;z-index:2}
 
 /* ---- reduced motion ---- */
@@ -154,7 +163,7 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
 }
 
 /* dev readout */
-#hud{position:fixed;left:10px;bottom:10px;z-index:99;font:11px ui-monospace,monospace;color:var(--ink-dim);background:#0006;padding:6px 9px;border-radius:6px;pointer-events:none}
+#hud{position:fixed;left:10px;bottom:10px;z-index:99;font:11px ui-monospace,monospace;color:var(--ink-body);background:color-mix(in srgb,var(--paper) 70%,transparent);border:1px solid var(--line);padding:6px 9px;border-radius:6px;pointer-events:none}
 </style>
 </head>
 <body>
@@ -296,9 +305,11 @@ const FOV    = 45, CAM_Z = 12;
 const camera = new THREE.PerspectiveCamera(FOV, 1, .1, 100);
 camera.position.set(0, 0, CAM_Z);
 
-const key  = new THREE.DirectionalLight(0xffffff, 1.8); key.position.set(3,5,6); scene.add(key);
-const hemi = new THREE.HemisphereLight(0xbfd8c0, 0x1a2118, 1.1); scene.add(hemi);
-const glow = new THREE.PointLight(0xd8a24a, 8, 14); scene.add(glow);   // travels with the dragonfly
+/* Lit for a light paper background: a dark silhouette needs less fill than
+   it did on the old dark ground, or it washes out to a grey smudge. */
+const key  = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(3,5,6); scene.add(key);
+const hemi = new THREE.HemisphereLight(0xffffff, 0xDDD6C7, 0.9); scene.add(hemi);
+const glow = new THREE.PointLight(0xCBA093, 5, 14); scene.add(glow);   // travels with the dragonfly, tinted by mood
 
 /* world-units visible at a given z, so waypoints can be authored
    as viewport fractions and stay correct on every screen size */
@@ -316,7 +327,7 @@ const fly = new THREE.Group();
 const placeholder = new THREE.Group();   // kept as fallback if the .glb fails
 fly.add(placeholder);
 
-const bodyMat = new THREE.MeshStandardMaterial({ color:0x2f4a34, roughness:.45, metalness:.25 });
+const bodyMat = new THREE.MeshStandardMaterial({ color:0x57614D, roughness:.45, metalness:.25 });  // muted moss
 const body = new THREE.Mesh(new THREE.CapsuleGeometry(.10,.95,4,12), bodyMat);
 body.rotation.x = Math.PI/2;                       // lie along +z (travel axis)
 placeholder.add(body);
@@ -326,13 +337,13 @@ tail.rotation.x = -Math.PI/2; tail.position.z = -.85;
 placeholder.add(tail);
 
 const head = new THREE.Mesh(new THREE.SphereGeometry(.15,16,16),
-  new THREE.MeshStandardMaterial({ color:0x3d6142, roughness:.3, metalness:.4 }));
+  new THREE.MeshStandardMaterial({ color:0x5A657C, roughness:.3, metalness:.4 }));  // slate blue
 head.position.z = .58; placeholder.add(head);
 
 // glassy wings — MeshPhysicalMaterial + transmission, per the guardrail (no custom shaders)
 const wingMat = new THREE.MeshPhysicalMaterial({
-  color:0xdfeee6, transmission:.92, thickness:.3, roughness:.12,
-  iridescence:1, iridescenceIOR:1.3, transparent:true, opacity:.55,
+  color:0xF4F0E6, transmission:.88, thickness:.3, roughness:.12,
+  iridescence:1, iridescenceIOR:1.3, transparent:true, opacity:.62,
   side:THREE.DoubleSide, depthWrite:false
 });
 const wings = [];
@@ -585,7 +596,7 @@ function frame(){
   /* --- emergence from the light bloom at the very start --- */
   const born = smoothstep(0, 0.045, t);
   fly.scale.setScalar(0.35 + born * 0.65);
-  bloom.style.opacity = (1 - smoothstep(0, 0.07, t)) * 0.9;
+  bloom.style.opacity = (1 - smoothstep(0, 0.07, t)) * 0.55;   // softer over paper
 
   /* --- orient to direction of travel, held upright ---
      The legs sit on the underside, so they only come into view when the
