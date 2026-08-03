@@ -1,0 +1,11 @@
+Model Information:
+* title:	skull island dragonfly
+* source:	https://sketchfab.com/3d-models/skull-island-dragonfly-fba7a07f3fc342e8a750802b1cfbebf9
+* author:	dinoguy263allo (https://sketchfab.com/dinoguy263allo)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "skull island dragonfly" (https://sketchfab.com/3d-models/skull-island-dragonfly-fba7a07f3fc342e8a750802b1cfbebf9) by dinoguy263allo (https://sketchfab.com/dinoguy263allo) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LCOA — Dragonfly scroll guide (prototype)</title>
+<meta name="robots" content="noindex">
+
+<!-- Type system lifted from the live site so the prototype reads as LCOA -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+
+<style>
+@font-face{
+  font-family:'Birds of Paradise';
+  font-style:normal;font-weight:400;font-display:swap;
+  src:local('Birds of Paradise  Personal use'),
+      url('https://fonts.cdnfonts.com/s/15021/Birds%20of%20Paradise%20%C2%A9%20PERSONAL%20USE%20ONLY.woff') format('woff');
+}
+/* ============================================================
+   MOOD SYSTEM
+   Three mood categories -> one bg + one accent each.
+   Placeholder values. Swap for real brand colours later;
+   nothing else needs to change.
+   ============================================================ */
+:root{
+  --mood-energetic-bg:#1d2b1f;  --mood-energetic-ac:#d8a24a;
+  --mood-reflective-bg:#16212b; --mood-reflective-ac:#7fa8a0;
+  --mood-functional-bg:#101312; --mood-functional-ac:#9fb3a0;
+
+  /* live values, written each frame from the scroll timeline */
+  --bg:#1d2b1f;
+  --accent:#d8a24a;
+  --ink:#eef1ea;
+  --ink-dim:#eef1ea99;
+
+  /* same roles as the live site: display / sans / serif / script */
+  --f-display:'Birds of Paradise','Birds of Paradise  Personal use','Cormorant Garamond',serif;
+  --f-sans:'Jost',sans-serif;
+  --f-serif:'Cormorant Garamond',serif;
+  --f-script:'Pinyon Script',cursive;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--f-sans);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* ---- the one fixed transparent canvas ---- */
+#dfly-canvas{
+  position:fixed; inset:0;
+  width:100vw; height:100vh;
+  pointer-events:none;
+  z-index:50;
+}
+
+/* hero light bloom the dragonfly emerges from */
+#bloom{
+  position:fixed; left:50%; top:46%;
+  width:60vmin; height:60vmin;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:radial-gradient(circle,
+    color-mix(in srgb,var(--accent) 55%,transparent) 0%,
+    color-mix(in srgb,var(--accent) 14%,transparent) 38%,
+    transparent 70%);
+  filter:blur(12px);
+  pointer-events:none; z-index:40; opacity:0;
+}
+
+/* ---- sections: equal height keeps waypoint↔section alignment 1:1 ---- */
+section{
+  min-height:100vh;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:10vh 6vw; position:relative; z-index:2;
+  text-align:center;
+}
+.eyebrow{
+  font-family:var(--f-sans); font-weight:500;
+  font-size:clamp(.6rem,1.4vw,.72rem); letter-spacing:.42em; text-transform:uppercase;
+  color:var(--accent); margin:0 0 1.4rem;
+}
+h1{font-family:var(--f-display); font-weight:400; font-size:clamp(2rem,7.6vw,5.4rem); letter-spacing:.01em; margin:0; line-height:1.0}
+h2{font-family:var(--f-display); font-weight:500; font-size:clamp(2rem,6vw,3.6rem); line-height:1.08; margin:0 0 1.2rem}
+p{font-family:var(--f-serif); font-size:clamp(1.05rem,2.2vw,1.35rem); color:var(--ink-dim); max-width:42ch; line-height:1.7; margin:0 auto}
+.logo-mark{
+  width:120px;height:120px;border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
+  display:grid;place-items:center;margin:0 auto 2.2rem;
+  font-family:var(--f-display);font-size:2.2rem;letter-spacing:.06em;color:var(--accent);
+}
+
+/* ---- team: cards revealed by the dragonfly's x-position ---- */
+.team-row{display:flex;gap:1.4rem;flex-wrap:wrap;justify-content:center;margin-top:3rem}
+.t-card{
+  width:150px;padding:1.6rem 1rem;border-radius:14px;
+  background:color-mix(in srgb,var(--accent) 7%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 18%,transparent);
+  opacity:0;transform:translateY(28px) scale(.96);
+  transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1);
+}
+.t-card.lit{opacity:1;transform:none}
+.t-card .av{width:56px;height:56px;border-radius:50%;margin:0 auto .8rem;background:color-mix(in srgb,var(--accent) 26%,transparent)}
+.t-card .nm{font-family:var(--f-script);font-size:1.35rem;line-height:1}
+.t-card .ro{font-family:var(--f-sans);font-weight:500;font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-top:.35rem}
+
+/* ---- gallery: cards at varying depth, faked with scale/blur/opacity ---- */
+.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.2rem;margin-top:3rem;width:min(900px,100%)}
+.g-card{aspect-ratio:4/5;border-radius:12px;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 22%,transparent),transparent);border:1px solid color-mix(in srgb,var(--accent) 14%,transparent)}
+.g-card:nth-child(2){transform:scale(.9) translateY(18px);filter:blur(1px);opacity:.72}
+.g-card:nth-child(3){transform:scale(1.04) translateY(-10px)}
+.g-card:nth-child(4){transform:scale(.86) translateY(26px);filter:blur(1.6px);opacity:.6}
+.g-card:nth-child(5){transform:scale(.96) translateY(6px);opacity:.85}
+
+/* ---- events ---- */
+.ev{display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center;margin-top:3rem}
+.e-card{width:210px;padding:1.6rem;border-radius:14px;text-align:left;border:1px solid color-mix(in srgb,var(--accent) 16%,transparent)}
+.e-card.featured{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.e-card .dt{font-family:var(--f-sans);font-weight:500;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.e-card .ti{font-family:var(--f-serif);font-weight:600;margin-top:.6rem;font-size:1.25rem}
+
+/* ---- form: dragonfly rests to the SIDE, never over the inputs ---- */
+#form .wrap{width:min(440px,100%);margin-right:auto;margin-left:0;text-align:left}
+@media(min-width:900px){ #form{align-items:flex-start;padding-left:12vw} }
+label{display:block;font-family:var(--f-sans);font-weight:500;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:1.4rem 0 .5rem}
+input{
+  width:100%;padding:.85rem 1rem;border-radius:9px;
+  border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);
+  background:color-mix(in srgb,var(--ink) 5%,transparent);
+  color:var(--ink);font:inherit;
+}
+input:focus{outline:none;border-color:var(--accent)}
+button.sub{margin-top:2rem;padding:.9rem 2rem;border-radius:100px;border:0;background:var(--accent);color:#10130f;font:inherit;font-weight:600;cursor:pointer}
+
+.credit{font-size:.72rem;line-height:1.6;margin-top:1.6rem;opacity:.62;max-width:40ch}
+.credit a{color:var(--accent)}
+footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding:4rem 6vw;position:relative;z-index:2}
+
+/* ---- reduced motion ---- */
+@media(prefers-reduced-motion:reduce){
+  .t-card{opacity:1;transform:none;transition:none}
+  .g-card{filter:none;transform:none;opacity:1}
+}
+
+/* dev readout */
+#hud{position:fixed;left:10px;bottom:10px;z-index:99;font:11px ui-monospace,monospace;color:var(--ink-dim);background:#0006;padding:6px 9px;border-radius:6px;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div id="bloom"></div>
+<canvas id="dfly-canvas"></canvas>
+<div id="hud">scroll —</div>
+
+<!-- 1 -->
+<section id="hero" data-mood="energetic">
+  <div class="logo-mark">A</div>
+  <p class="eyebrow">Leo Club International · District 3231 A4</p>
+  <h1>Leo Club of Aurelian</h1>
+</section>
+
+<!-- 2 -->
+<section id="motto" data-mood="reflective">
+  <p class="eyebrow">Our motto for the year</p>
+  <h2>Built on Bonds</h2>
+  <p>Just as a building stands firm because of its foundation, our club stands strong because of the bonds that bring us together.</p>
+</section>
+
+<!-- 3 -->
+<section id="team" data-mood="energetic">
+  <p class="eyebrow">The circle that leads</p>
+  <h2>Meet the team</h2>
+  <p>Each card lights as the dragonfly passes it.</p>
+  <div class="team-row">
+    <div class="t-card"><div class="av"></div><div class="nm">Name</div><div class="ro">President</div></div>
+    <div class="t-card"><div class="av"></div><div class="nm">Name</div><div class="ro">Vice President</div></div>
+    <div class="t-card"><div class="av"></div><div class="nm">Name</div><div class="ro">Secretary</div></div>
+    <div class="t-card"><div class="av"></div><div class="nm">Name</div><div class="ro">Treasurer</div></div>
+    <div class="t-card"><div class="av"></div><div class="nm">Name</div><div class="ro">Marketing</div></div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="gallery" data-mood="reflective">
+  <p class="eyebrow">Where we have been</p>
+  <h2>Past events</h2>
+  <div class="gal">
+    <div class="g-card"></div><div class="g-card"></div><div class="g-card"></div>
+    <div class="g-card"></div><div class="g-card"></div><div class="g-card"></div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="events" data-mood="energetic">
+  <p class="eyebrow">What comes next</p>
+  <h2>Upcoming events</h2>
+  <div class="ev">
+    <div class="e-card"><div class="dt">Coming soon</div><div class="ti">Placeholder event</div></div>
+    <div class="e-card featured" id="featuredEvent"><div class="dt">Next up</div><div class="ti">The Unveiling</div></div>
+    <div class="e-card"><div class="dt">Coming soon</div><div class="ti">Placeholder event</div></div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="form" data-mood="functional">
+  <div class="wrap">
+    <p class="eyebrow">Join us</p>
+    <h2>Become a member</h2>
+    <label for="n">Full name</label><input id="n" type="text" autocomplete="name">
+    <label for="e">Email</label><input id="e" type="email" autocomplete="email">
+    <label for="w">WhatsApp number</label><input id="w" type="tel" autocomplete="tel">
+    <button class="sub" type="button">Become a member</button>
+  </div>
+</section>
+
+<!-- 7 -->
+<footer id="footer" data-mood="functional">
+  <div>
+    <p class="eyebrow">Leo Club of Aurelian</p>
+    <p>Prototype — dragonfly scroll guide.</p>
+    <p class="credit">
+      &ldquo;<a href="https://skfb.ly/pHntB" rel="noopener">skull island dragonfly</a>&rdquo;
+      by dinoguy263allo is licensed under
+      <a href="http://creativecommons.org/licenses/by/4.0/" rel="noopener license">Creative Commons Attribution</a>.
+    </p>
+  </div>
+</footer>
+
+<!-- GSAP: same version already on the live site -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1/dist/lenis.min.js"></script>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+gsap.registerPlugin(ScrollTrigger);
+
+/* ============================================================
+   1. LENIS  <->  SCROLLTRIGGER SYNC   (do this before anything else)
+   Lenis 1.x drives the real window scroll, so ScrollTrigger only
+   needs to be told *when* to re-read it. No scrollerProxy: that is
+   for Lenis running on a custom wrapper, and adding it here would
+   reintroduce the desync it is meant to fix.
+   ============================================================ */
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+const isTouch = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0;
+let lenis = null;
+if (!reduce && window.Lenis && !isTouch){
+  lenis = new Lenis({ lerp:.09, smoothWheel:true });
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add(t => lenis.raf(t * 1000));
+  gsap.ticker.lagSmoothing(0);
+}
+/* Lenis only emits 'scroll' for scrolls IT drives, and while it is active the
+   native scroll event does not fire at all (measured: 0 events across a
+   window.scrollTo of 3000px). So a native-scroll listener is dead code here.
+   Anything that moves the page without going through Lenis — scrollTo, scroll
+   restoration, keyboard Home/End, find-in-page, an anchor jump — would freeze
+   the flight while the content kept moving. Updating from the shared ticker
+   instead is unconditional: whatever moved the page, the next frame reads it.
+   It is also what scrub already does internally, so the cost is nil. */
+const syncScroll = () => ScrollTrigger.update();
+if (!reduce) gsap.ticker.add(syncScroll);
+
+/* ============================================================
+   2. THREE SETUP — camera is FIXED. Only the dragonfly moves.
+   ============================================================ */
+const canvas   = document.getElementById('dfly-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true });
+renderer.setClearAlpha(0);
+
+const scene  = new THREE.Scene();
+const FOV    = 45, CAM_Z = 12;
+const camera = new THREE.PerspectiveCamera(FOV, 1, .1, 100);
+camera.position.set(0, 0, CAM_Z);
+
+const key  = new THREE.DirectionalLight(0xffffff, 1.8); key.position.set(3,5,6); scene.add(key);
+const hemi = new THREE.HemisphereLight(0xbfd8c0, 0x1a2118, 1.1); scene.add(hemi);
+const glow = new THREE.PointLight(0xd8a24a, 8, 14); scene.add(glow);   // travels with the dragonfly
+
+/* world-units visible at a given z, so waypoints can be authored
+   as viewport fractions and stay correct on every screen size */
+function halfExtents(z){
+  const h = Math.tan(THREE.MathUtils.degToRad(FOV/2)) * (CAM_Z - z);
+  return { hh:h, hw:h * camera.aspect };
+}
+
+/* ============================================================
+   3. PLACEHOLDER DRAGONFLY  (step 1 of build order)
+   Cone body + sphere head + 4 flat wing planes.
+   Real .glb swaps in at step 4 — replace buildDragonfly() only.
+   ============================================================ */
+const fly = new THREE.Group();
+const placeholder = new THREE.Group();   // kept as fallback if the .glb fails
+fly.add(placeholder);
+
+const bodyMat = new THREE.MeshStandardMaterial({ color:0x2f4a34, roughness:.45, metalness:.25 });
+const body = new THREE.Mesh(new THREE.CapsuleGeometry(.10,.95,4,12), bodyMat);
+body.rotation.x = Math.PI/2;                       // lie along +z (travel axis)
+placeholder.add(body);
+
+const tail = new THREE.Mesh(new THREE.ConeGeometry(.09,.85,10), bodyMat);
+tail.rotation.x = -Math.PI/2; tail.position.z = -.85;
+placeholder.add(tail);
+
+const head = new THREE.Mesh(new THREE.SphereGeometry(.15,16,16),
+  new THREE.MeshStandardMaterial({ color:0x3d6142, roughness:.3, metalness:.4 }));
+head.position.z = .58; placeholder.add(head);
+
+// glassy wings — MeshPhysicalMaterial + transmission, per the guardrail (no custom shaders)
+const wingMat = new THREE.MeshPhysicalMaterial({
+  color:0xdfeee6, transmission:.92, thickness:.3, roughness:.12,
+  iridescence:1, iridescenceIOR:1.3, transparent:true, opacity:.55,
+  side:THREE.DoubleSide, depthWrite:false
+});
+const wings = [];
+for (const side of [1,-1]){
+  for (const [i,zOff] of [[0,.24],[1,-.16]]){
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(.95,.30), wingMat);
+    w.position.set(side * .5, 0, zOff);
+    w.rotation.y = Math.PI/2;                      // plane spans outward from body
+    const pivot = new THREE.Group();               // pivot at the body so it hinges, not spins
+    pivot.position.z = zOff;
+    w.position.set(side * .48, 0, 0);
+    pivot.add(w);
+    placeholder.add(pivot);
+    wings.push({ pivot, side, pair:i });
+  }
+}
+scene.add(fly);
+
+/* ============================================================
+   3b. REAL MODEL  (step 4 of build order)
+   "skull island dragonfly" by dinoguy263allo, CC-BY-4.0.
+   The model ships with NO baked animation clips, so there is no
+   AnimationMixer here — the procedural sine flap is retained and
+   driven through the armature's four wing-root bones instead.
+   Load with ?placeholder=1 to force the box-and-planes stand-in.
+   ============================================================ */
+/* Names as they appear in scene.gltf. GLTFLoader runs them through
+   PropertyBinding.sanitizeNodeName, which strips '.', so 'wing.r.004_042'
+   arrives as 'wingr004_042'. Match on a normalised key to survive that. */
+const WING_ROOTS = [        // fore/hind pair per side
+  { name:'wing.r_034',     side: 1, pair:0 },
+  { name:'wing.l_038',     side:-1, pair:0 },
+  { name:'wing.r.004_042', side: 1, pair:1 },
+  { name:'wing.l.004_046', side:-1, pair:1 },
+];
+const normName = n => n.toLowerCase().replace(/[^a-z0-9]/g, '');
+const BODY_LENGTH = 1.5;    // target world size (nose to tail), in scene units
+
+if (!new URLSearchParams(location.search).has('placeholder')){
+  new GLTFLoader().load('models/dragonfly/scene.gltf', gltf => {
+    const model = gltf.scene;
+
+    /* --- normalise scale + orientation from the model's own bounds, so we
+       do not hard-code assumptions about how it was exported --- */
+    const box  = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const ctr  = box.getCenter(new THREE.Vector3());
+    const axes = [size.x, size.y, size.z];
+    const longest = axes.indexOf(Math.max(...axes));       // body's length axis
+
+    /* one place sets both scale and the recentre offset, so they can never
+       drift apart when the size is retuned */
+    const sizeTo = len => {
+      const k = len / axes[longest];
+      model.scale.setScalar(k);
+      model.position.copy(ctr).multiplyScalar(-k);
+    };
+    sizeTo(BODY_LENGTH);
+
+    const rig = new THREE.Group();                          // aligns model -> +Z travel axis
+    rig.add(model);
+    if (longest === 0) rig.rotation.y =  Math.PI / 2;       // X-long -> face +Z
+    else if (longest === 1) rig.rotation.x = -Math.PI / 2;  // Y-long -> face +Z
+    fly.add(rig);
+
+    /* --- rebind the flap to the armature --- */
+    const byName = new Map();
+    model.traverse(o => byName.set(normName(o.name), o));
+    const bones = [];
+    const fwdModel = new THREE.Vector3(0,0,0).setComponent(longest, 1);  // hinge axis, model space
+    const qRootInv = new THREE.Quaternion(), qParent = new THREE.Quaternion(), rel = new THREE.Quaternion();
+    model.getWorldQuaternion(qRootInv).invert();
+
+    for (const w of WING_ROOTS){
+      const b = byName.get(normName(w.name));
+      if (!b || !b.parent) continue;
+      b.parent.getWorldQuaternion(qParent);
+      rel.copy(qRootInv).multiply(qParent);                 // parent frame, relative to model root
+      bones.push({
+        bone: b,
+        restQ: b.quaternion.clone(),
+        axis : fwdModel.clone().applyQuaternion(rel.clone().invert()).normalize(),
+        side : w.side, pair: w.pair,
+      });
+    }
+
+    /* --- hide the legs ---
+       The legs are not a separate mesh: the whole insect is one skinned mesh,
+       so they can only be removed by collapsing the bones that drive them.
+       Scaling a leg ROOT to ~0 folds its vertices into the thorax and every
+       child bone inherits, so the 6 roots cover all 34 leg bones. Roots are
+       found structurally (a 'leg' bone whose parent is not one) rather than
+       by hard-coded names, so a re-export cannot silently bring them back.
+       Not exactly 0: a singular matrix can propagate NaN through skinning. */
+    let legRoots = 0;
+    model.traverse(o => {
+      const isLeg = n => /leg/i.test(n || '');
+      if (o.isBone && isLeg(o.name) && !isLeg(o.parent?.name)){
+        o.scale.setScalar(1e-4);
+        legRoots++;
+      }
+    });
+    if (!legRoots) console.warn('[dfly] no leg bones found — legs may still be visible');
+
+    if (bones.length === WING_ROOTS.length){
+      placeholder.visible = false;
+      wings.length = 0;
+      for (const b of bones) wings.push(b);
+    } else {
+      // rig did not match expectations — keep the stand-in rather than ship a static model
+      rig.visible = false;
+      console.warn(`[dfly] matched ${bones.length}/${WING_ROOTS.length} wing bones, keeping placeholder`);
+    }
+    // live tuning handle: __dfly.setSize(1.2) in the console, then tell me the number
+    window.__dfly && (window.__dfly.model = model, window.__dfly.bones = bones,
+                      window.__dfly.setSize = sizeTo);
+  },
+  undefined,
+  err => console.warn('[dfly] model failed to load, keeping placeholder', err));
+}
+
+/* ============================================================
+   4. FLIGHT PATH — 7 waypoints, one per section.
+   Authored as viewport fractions (x,y) + world depth (z).
+   CatmullRomCurve3 gives a genuinely 3D curve; MotionPathPlugin
+   only curves in x/y, which would flatten the gallery depth beat.
+   ============================================================ */
+const WAYPOINTS = [
+  { id:'hero',    fx: 0.00, fy: 0.12, z: 0.0 },   // emerges from the bloom
+  { id:'motto',   fx:-0.52, fy:-0.08, z:-1.2 },   // settles, rests (left)
+  { id:'team',    fx: 0.62, fy: 0.05, z: 0.8 },   // sweeps L->R so cards light in reading order
+  { id:'gallery', fx:-0.45, fy:-0.15, z:-2.6 },   // drifts deep, "through rooms"
+  { id:'events',  fx: 0.30, fy: 0.10, z: 0.6 },   // circles the featured card
+  { id:'form',    fx: 0.72, fy:-0.02, z: 0.2 },   // off to the side of the inputs
+  { id:'footer',  fx: 1.45, fy: 0.55, z:-1.0 },   // exits off-screen
+];
+const SEGMENTS = WAYPOINTS.length - 1;            // 6
+
+const MOODS = {
+  energetic : { bg:'--mood-energetic-bg',  ac:'--mood-energetic-ac',  flap:26, bob:1.00 },
+  reflective: { bg:'--mood-reflective-bg', ac:'--mood-reflective-ac', flap:13, bob:0.42 },
+  functional: { bg:'--mood-functional-bg', ac:'--mood-functional-ac', flap:16, bob:0.30 },
+};
+const cs = getComputedStyle(document.documentElement);
+const readVar = n => cs.getPropertyValue(n).trim();
+const SECTION_MOOD = [...document.querySelectorAll('[data-mood]')].map(el => el.dataset.mood);
+const MOOD_BG = SECTION_MOOD.map(m => readVar(MOODS[m].bg));
+const MOOD_AC = SECTION_MOOD.map(m => readVar(MOODS[m].ac));
+const MOOD_FLAP = SECTION_MOOD.map(m => MOODS[m].flap);
+const MOOD_BOB  = SECTION_MOOD.map(m => MOODS[m].bob);
+
+let curve;
+function buildCurve(){
+  curve = new THREE.CatmullRomCurve3(
+    WAYPOINTS.map(w => {
+      const { hh, hw } = halfExtents(w.z);
+      return new THREE.Vector3(w.fx * hw, w.fy * hh, w.z);
+    }),
+    false, 'catmullrom', 0.5
+  );
+}
+
+function resize(){
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  buildCurve();                                   // world units depend on aspect
+}
+addEventListener('resize', resize);
+resize();
+
+/* ============================================================
+   5. MASTER SCROLLTRIGGER — one scrubbed timeline, whole page.
+   state.t 0→1 maps linearly onto the 6 curve segments, so
+   section N ↔ waypoint N as long as sections are 100vh.
+   ============================================================ */
+const state = { t: 0 };
+if (!reduce){
+  gsap.to(state, {
+    t: 1, ease:'none',
+    scrollTrigger:{ trigger:document.body, start:'top top', end:'bottom bottom', scrub:true }
+  });
+}
+
+/* mood colours are derived from the SAME t, so they can never
+   drift out of step with the flight */
+const tmpA = new THREE.Color(), tmpB = new THREE.Color(), tmpC = new THREE.Color();
+function applyMood(t){
+  const s = Math.min(t * SEGMENTS, SEGMENTS - 1e-6);
+  const i = Math.floor(s), f = s - i;
+  tmpA.set(MOOD_BG[i]); tmpB.set(MOOD_BG[i+1]);
+  tmpC.copy(tmpA).lerp(tmpB, f);
+  document.documentElement.style.setProperty('--bg', '#' + tmpC.getHexString());
+  tmpA.set(MOOD_AC[i]); tmpB.set(MOOD_AC[i+1]);
+  tmpC.copy(tmpA).lerp(tmpB, f);
+  const ac = '#' + tmpC.getHexString();
+  document.documentElement.style.setProperty('--accent', ac);
+  glow.color.set(ac);
+  return {
+    flap: THREE.MathUtils.lerp(MOOD_FLAP[i], MOOD_FLAP[i+1], f),
+    bob : THREE.MathUtils.lerp(MOOD_BOB[i],  MOOD_BOB[i+1],  f),
+  };
+}
+
+/* ============================================================
+   6. RENDER LOOP
+   Wing flap + idle bob run off elapsed time, NOT scroll, so they
+   never freeze when the visitor stops scrolling.
+   ============================================================ */
+const clock = new THREE.Clock();
+const pos = new THREE.Vector3(), tan = new THREE.Vector3(), look = new THREE.Vector3();
+const targetQ = new THREE.Quaternion(), mat4 = new THREE.Matrix4(), flapQ = new THREE.Quaternion();
+const up = new THREE.Vector3(0,1,0);
+const dirXY = new THREE.Vector3();
+const VIEW_UP = new THREE.Vector3(0,0,1);   // camera axis: keeps the back to the viewer
+let NOSE = 1;                                // flip to -1 if it flies tail-first (__dfly.flipNose())
+const teamCards = [...document.querySelectorAll('.t-card')];
+const hud = document.getElementById('hud');
+const bloom = document.getElementById('bloom');
+let flapPhase = 0;
+
+function smoothstep(a,b,x){ const t = THREE.MathUtils.clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); }
+
+function frame(){
+  const dt = Math.min(clock.getDelta(), .05);
+  const el = clock.elapsedTime;
+  const t  = state.t;
+
+  const mood = applyMood(t);
+
+  /* --- position along the curve --- */
+  curve.getPoint(t, pos);
+  curve.getTangent(t, tan);
+
+  /* idle bob — independent of scroll, damped by mood */
+  pos.x += Math.sin(el * 0.73) * 0.10 * mood.bob;
+  pos.y += Math.sin(el * 1.21) * 0.14 * mood.bob;
+
+  /* circling flourish over the featured event card (segment 4 → 5) */
+  const circ = smoothstep(4/SEGMENTS, 4.35/SEGMENTS, t) * (1 - smoothstep(4.65/SEGMENTS, 5/SEGMENTS, t));
+  if (circ > 0){
+    pos.x += Math.cos(el * 2.1) * 0.85 * circ;
+    pos.y += Math.sin(el * 2.1) * 0.55 * circ;
+  }
+
+  fly.position.copy(pos);
+
+  /* --- emergence from the light bloom at the very start --- */
+  const born = smoothstep(0, 0.045, t);
+  fly.scale.setScalar(0.35 + born * 0.65);
+  bloom.style.opacity = (1 - smoothstep(0, 0.07, t)) * 0.9;
+
+  /* --- orient to direction of travel, held upright ---
+     The legs sit on the underside, so they only come into view when the
+     insect is seen edge-on. Keeping its back to the camera shows the wing
+     spread and hides the legs behind the body.
+     Two rules do that: steer using only the screen-plane component of the
+     tangent (no pitch out of plane), and use the view axis +Z as "up", so
+     the dorsal side always faces the camera. Depth still varies via
+     position.z, it just never tips the body.
+     No roll: banking would tip the underside into view. The idle wobble is
+     a yaw about the view axis instead, which stays flat to camera. */
+  dirXY.set(tan.x, tan.y, 0);
+  if (dirXY.lengthSq() < 1e-6) dirXY.set(1, 0, 0);            // degenerate tangent guard
+  dirXY.normalize().multiplyScalar(NOSE);
+  look.copy(pos).add(dirXY);
+  mat4.lookAt(pos, look, VIEW_UP);
+  targetQ.setFromRotationMatrix(mat4);
+  fly.quaternion.slerp(targetQ, 1 - Math.pow(0.0015, dt));   // frame-rate independent
+  fly.rotateY(Math.sin(el * 0.9) * 0.10 * mood.bob);          // wobble in the view plane
+
+  glow.position.copy(pos);
+
+  /* --- wings: own loop, never scroll-driven --- */
+  flapPhase += dt * mood.flap;
+  for (const w of wings){
+    // fore/hind beat out of phase, as a real dragonfly's do
+    const a = Math.sin(flapPhase + w.pair * Math.PI * 0.55) * 0.62 * w.side;
+    if (w.bone){
+      flapQ.setFromAxisAngle(w.axis, a);
+      w.bone.quaternion.copy(flapQ).multiply(w.restQ);   // offset applied in parent frame
+    } else {
+      w.pivot.rotation.z = a;
+    }
+  }
+
+  /* --- team cards lit by the dragonfly's projected x-position --- */
+  if (teamCards.length){
+    const p = pos.clone().project(camera);
+    const flyX = (p.x * .5 + .5) * innerWidth;
+    for (const c of teamCards){
+      if (c.classList.contains('lit')) continue;
+      const r = c.getBoundingClientRect();
+      const onScreen = r.top < innerHeight && r.bottom > 0;
+      if (onScreen && flyX > r.left + r.width * .35) c.classList.add('lit');
+    }
+  }
+
+  hud.textContent = `t ${t.toFixed(3)}  ·  seg ${Math.min(Math.floor(t*SEGMENTS),SEGMENTS-1)}  ·  ${SECTION_MOOD[Math.min(Math.round(t*SEGMENTS),SEGMENTS)]}`;
+  renderer.render(scene, camera);
+}
+
+/* ============================================================
+   7. REDUCED MOTION — static dragonfly, no flight, no flap.
+   ============================================================ */
+if (reduce){
+  state.t = 0.12;
+  applyMood(state.t);
+  curve.getPoint(state.t, pos);
+  fly.position.copy(pos);
+  fly.scale.setScalar(1);
+  bloom.style.opacity = 0;
+  teamCards.forEach(c => c.classList.add('lit'));
+  hud.textContent = 'reduced motion — static';
+  renderer.render(scene, camera);
+  addEventListener('resize', () => renderer.render(scene, camera));
+} else {
+  gsap.ticker.add(frame);      // one loop, shared with Lenis
+}
+
+/* prototype-only handle, for reviewing the flight without a mouse */
+window.__dfly = {
+  get t(){ return state.t; },
+  lenis, fly, curve, WAYPOINTS, scene, camera, renderer,
+  flipNose(){ NOSE = -NOSE; return NOSE; },          // if it travels tail-first
+  roll(deg){ fly.rotateZ(THREE.MathUtils.degToRad(deg)); },   // one-off, to inspect other faces
+};
+</script>
+</body>
+</html>
