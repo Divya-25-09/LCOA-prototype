@@ -109,6 +109,9 @@ body{
    measured Figma composition - so adding more there would break it. */
 #heroFrame .hf-peony-tl, #heroFrame .hf-peony-tr{ display:none; }
 
+/* Phone-only floral border, off everywhere else. */
+#heroFrame .hfm{ display:none; }
+
 .hf-star-l1{ width:clamp(52px,11.15vw,212px); left:10.57%; top:-8.78%; }
 .hf-star-l2{ width:clamp(16px, 2.50vw, 47px); left: 2.42%; top:73.56%; }
 .hf-star-r1{ width:clamp(44px, 9.02vw,172px); left:93.90%; top: 9.82%; }
@@ -119,14 +122,52 @@ body{
    media queries add no specificity of their own, so an unprefixed
    `display:none` here silently loses to the base `display:block`. */
 @media (max-width:640px){
-  /* PORTRAIT: no frame at all.
-     The botanicals are a desktop treatment. The frame is authored at 2.2:1
-     where full-height panels flank a headline using 45% of the width; on a
-     phone the headline needs 66%, so the same artwork has nowhere to sit
-     that does not either crowd the emblem or read as clipart. Rather than
-     keep reshuffling it, the hero here is the emblem and type on clean
-     paper, with the dragonfly as the only decorative element. */
-  #heroFrame{ display:none; }
+  /* PORTRAIT: floral border with a clear centre.
+     The desktop frame (full-height peony panels + stars) is authored for
+     2.2:1 and does not translate, so phones get their own composition:
+     blooms ringing all four edges with the emblem and headline in the
+     middle. Measured off the portrait mockup - art roughly 23% in from the
+     left, 38% from the right, 29% down from the top and 20% up from the
+     bottom, with the headline band left clear. */
+  #heroFrame{ display:block; }
+  #heroFrame .hf { display:none; }      /* desktop frame off */
+  #heroFrame .hfm{ display:block; }
+
+  #heroFrame .hfm{
+    position:absolute; height:auto;
+    /* transform only. Deliberately NOT will-change:opacity - these carry a
+       static blur, and animating opacity on a blurred layer forces a fresh
+       blur pass every frame, which is what made the hero laggy before. */
+    will-change:transform;
+  }
+
+  /* Variable layer blur standing in for depth of field: the biggest and
+     outermost blooms read as nearest the lens, so they blur hardest. In vw
+     so it holds proportion across phone sizes. Measured against the mockup,
+     the florals sit ~2.5x softer than the centre. */
+  #heroFrame .hfm-b1{ filter:blur(0.55vw); }
+  #heroFrame .hfm-b2{ filter:blur(0.85vw); }
+  #heroFrame .hfm-b3{ filter:blur(1.15vw); }
+  #heroFrame .hfm-b4{ filter:blur(1.60vw); }
+
+  /* top band - dense, above the emblem */
+  #heroFrame .hfm-mint-tl { width:58%; left:-16%;  top:-5%;  }
+  #heroFrame .hfm-peony-tl{ width:34%; left: 22%;  top:-14%; }
+  #heroFrame .hfm-peony-tr{ width:38%; right:-10%; top:-10%; }
+  #heroFrame .hfm-blue-tr { width:58%; right:-18%; top:  3%; }
+
+  /* middle - edges only, so the emblem and headline stay clear */
+  #heroFrame .hfm-peony-ml{ width:36%; left:-22%;  top: 22%; }
+  #heroFrame .hfm-blue-mr { width:42%; right:-22%; top: 20%; }
+  #heroFrame .hfm-mint-mr { width:24%; right: -6%; top: 44%; }
+
+  /* bottom band - dense, below the headline. Sized to overlap each other
+     so the band reads as one mass of blooms rather than separate cut-outs,
+     the way the mockup's lower edge does. */
+  #heroFrame .hfm-peony-bl{ width:50%; left:-18%;  bottom:-12%; }
+  #heroFrame .hfm-blue-bl { width:50%; left:  2%;  bottom:-10%; }
+  #heroFrame .hfm-peony-br{ width:46%; right:-14%; bottom:-14%; }
+  #heroFrame .hfm-blue-br { width:42%; right: -2%; bottom:  2%; }
 }
 /* Short landscape windows: very little vertical room, so cap the panels
    against width instead of height. */
@@ -259,6 +300,24 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
   <img class="hf hf-right hf-peony-tr" src="images/peonies.webp" width="336" height="617" alt="" decoding="async" loading="lazy">
   <img class="hf hf-right hf-star-r1" src="images/star.webp"    width="320" height="371" alt="" decoding="async" loading="lazy">
   <img class="hf hf-right hf-star-r2" src="images/star.webp"    width="320" height="371" alt="" decoding="async" loading="lazy">
+
+  <!-- Phone-only floral border. Three assets reused across eleven positions,
+       so the extra elements cost no extra download. Blooms ring the edges
+       with the emblem and headline in a clear centre, per the portrait
+       mockup. Blur tiers stand in for depth of field: the biggest, outermost
+       blooms read as nearest the lens and carry the most blur. -->
+  <img class="hfm hfm-left  hfm-mint-tl  hfm-b4" src="images/bloom-mint.webp" width="375" height="499" alt="" decoding="async" loading="lazy">
+  <img class="hfm hfm-left  hfm-peony-tl hfm-b2" src="images/peonies.webp"    width="336" height="617" alt="" decoding="async" loading="lazy">
+  <img class="hfm hfm-left  hfm-peony-ml hfm-b3" src="images/peonies.webp"    width="336" height="617" alt="" decoding="async" loading="lazy">
+  <img class="hfm hfm-left  hfm-peony-bl hfm-b4" src="images/peonies.webp"    width="336" height="617" alt="" decoding="async" loading="lazy">
+  <img class="hfm hfm-left  hfm-blue-bl  hfm-b3" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
+
+  <img class="hfm hfm-right hfm-peony-tr hfm-b2" src="images/peonies.webp"    width="336" height="617" alt="" decoding="async" loading="lazy">
+  <img class="hfm hfm-right hfm-blue-tr  hfm-b4" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
+  <img class="hfm hfm-right hfm-blue-mr  hfm-b3" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
+  <img class="hfm hfm-right hfm-mint-mr  hfm-b1" src="images/bloom-mint.webp" width="375" height="499" alt="" decoding="async" loading="lazy">
+  <img class="hfm hfm-right hfm-peony-br hfm-b3" src="images/peonies.webp"    width="336" height="617" alt="" decoding="async" loading="lazy">
+  <img class="hfm hfm-right hfm-blue-br  hfm-b1" src="images/bloom-blue.webp" width="424" height="458" alt="" decoding="async" loading="lazy">
 </div>
 
 <div id="bloom"></div>
@@ -703,7 +762,23 @@ if (!reduce){
 if (!reduce){
   gsap.matchMedia().add('(max-width: 640px)', () => {
     const els = ['.hero-logo', '#hero .eyebrow', '#hero h1'];
-    let float, drift;
+    let float, drift, frame;
+
+    /* Floral border exit. Starts at 0.30 of the hero rather than 0, so the
+       dragonfly reads as emerging from the emblem FIRST and the border only
+       then parts around it - the emergence finishes at t=0.055 of the page,
+       which is 0.33 of the hero.
+       Transform only, no fade: these elements carry a static CSS blur, and
+       animating opacity on a blurred layer forces it to re-blur every frame.
+       Translating a blurred layer just repositions the cached raster, so it
+       stays cheap. They travel 1.25 viewports to guarantee they clear. */
+    frame = gsap.timeline({
+      scrollTrigger:{ trigger:'#hero', start:'top top', end:'bottom top',
+                      scrub:true, invalidateOnRefresh:true },
+      defaults:{ ease:'none' },
+    })
+      .to('.hfm-left',  { x: () => -(innerWidth * 1.25), duration:0.70 }, 0.30)
+      .to('.hfm-right', { x: () =>  (innerWidth * 1.25), duration:0.70 }, 0.30);
 
     const entrance = gsap.timeline({
       defaults: { ease: 'power3.out' },
@@ -733,7 +808,9 @@ if (!reduce){
       entrance.kill();
       float && float.kill();
       drift  && drift.kill();
+      frame && frame.kill();
       gsap.set(els, { clearProps: 'all' });
+      gsap.set('#heroFrame .hfm', { clearProps: 'x' });
     };
   });
 }
