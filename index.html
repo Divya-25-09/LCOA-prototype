@@ -103,11 +103,18 @@ section{
 h1{font-family:var(--f-display); font-weight:400; font-size:clamp(2rem,7.6vw,5.4rem); letter-spacing:.01em; margin:0; line-height:1.0; color:var(--ink)}
 h2{font-family:var(--f-display); font-weight:500; font-size:clamp(2rem,6vw,3.6rem); line-height:1.08; margin:0 0 1.2rem; color:var(--ink)}
 p{font-family:var(--f-serif); font-size:clamp(1.05rem,2.2vw,1.35rem); color:var(--ink-body); max-width:42ch; line-height:1.7; margin:0 auto}
-.logo-mark{
-  width:120px;height:120px;border-radius:50%;
-  border:1px solid var(--accent);
-  display:grid;place-items:center;margin:0 auto 2.2rem;
-  font-family:var(--f-display);font-size:2.2rem;letter-spacing:.06em;color:var(--ink);
+.hero-logo{
+  display:block; margin:0 auto;
+  width:min(42vw,240px); height:auto;
+  /* the emblem is a light illustration on light paper, so it needs a lift
+     rather than a hard edge */
+  filter:drop-shadow(0 18px 42px color-mix(in srgb,var(--ink) 22%,transparent));
+}
+
+/* visible to screen readers and search engines, not on screen */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
 }
 
 /* ---- team: cards revealed by the dragonfly's x-position ---- */
@@ -174,9 +181,17 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
 
 <!-- 1 -->
 <section id="hero" data-mood="energetic">
-  <div class="logo-mark">A</div>
-  <p class="eyebrow">Leo Club International · District 3231 A4</p>
-  <h1>Leo Club of Aurelian</h1>
+  <img class="hero-logo"
+       src="images/logo-700.webp"
+       srcset="images/logo-700.webp 700w, images/logo-1000.webp 1000w"
+       sizes="(max-width:600px) 42vw, 240px"
+       width="1000" height="946"
+       fetchpriority="high" decoding="async"
+       alt="Leo Club of Aurelian — Built on Bonds. MD 3231 A4, India.">
+  <!-- The emblem already carries the club name, motto and district, so the
+       heading is kept for semantics and screen readers rather than repeated
+       on screen. -->
+  <h1 class="sr-only">Leo Club of Aurelian — Built on Bonds</h1>
 </section>
 
 <!-- 2 -->
@@ -380,7 +395,15 @@ const WING_ROOTS = [        // fore/hind pair per side
   { name:'wing.l.004_046', side:-1, pair:1 },
 ];
 const normName = n => n.toLowerCase().replace(/[^a-z0-9]/g, '');
-const BODY_LENGTH = 1.0;    // target world size (nose to tail), in scene units
+/* Target world size, nose to tail. Calibrated by reading the WebGL buffer
+   and measuring the rendered silhouette on a 783px viewport:
+       1.0 ->  67px (too small)    5.0 -> 343px
+       2.2 -> 147px               8.0 -> 479px (too big)
+   3.1 lands near 210px, about 27% of viewport width - a companion creature
+   rather than a mascot. Tune live with __dfly.setSize(3.4). */
+const BODY_LENGTH = 3.1;
+const MODEL_YAW = 90;       // degrees, spins the model within the screen plane
+let setYaw = () => {};      // rebound once the model loads
 
 if (!new URLSearchParams(location.search).has('placeholder')){
   new GLTFLoader().load('models/dragonfly/scene.gltf', gltf => {
@@ -388,6 +411,11 @@ if (!new URLSearchParams(location.search).has('placeholder')){
 
     /* --- normalise scale + orientation from the model's own bounds, so we
        do not hard-code assumptions about how it was exported --- */
+    /* updateMatrixWorld first: this glTF nests scale on its child nodes (it
+       came from an FBX), and Box3.setFromObject reads matrixWorld. Measuring
+       before the matrices are current returned 0.305 units instead of ~3,
+       so every derived scale came out ~10x too large. */
+    model.updateMatrixWorld(true);
     const box  = new THREE.Box3().setFromObject(model);
     const size = box.getSize(new THREE.Vector3());
     const ctr  = box.getCenter(new THREE.Vector3());
@@ -407,7 +435,19 @@ if (!new URLSearchParams(location.search).has('placeholder')){
     rig.add(model);
     if (longest === 0) rig.rotation.y =  Math.PI / 2;       // X-long -> face +Z
     else if (longest === 1) rig.rotation.x = -Math.PI / 2;  // Y-long -> face +Z
-    fly.add(rig);
+
+    /* Spin wrapper. The axis alignment above only guarantees the body lies IN
+       the screen plane, not which way along it - without this the dragonfly
+       tracks its path sideways, body across the direction of travel.
+       fly's local +Y is the view axis (that is what VIEW_UP maps to), so
+       rotating a child about ITS Y spins the model within the screen plane
+       without ever tipping it and exposing the legs.
+       Tune with __dfly.setYaw(deg). */
+    const spin = new THREE.Group();
+    spin.rotation.y = THREE.MathUtils.degToRad(MODEL_YAW);
+    spin.add(rig);
+    fly.add(spin);
+    setYaw = deg => { spin.rotation.y = THREE.MathUtils.degToRad(deg); return deg; };
 
     /* --- rebind the flap to the armature --- */
     const byName = new Map();
@@ -671,6 +711,7 @@ window.__dfly = {
   get t(){ return state.t; },
   lenis, fly, curve, WAYPOINTS, scene, camera, renderer,
   flipNose(){ NOSE = -NOSE; return NOSE; },          // if it travels tail-first
+  setYaw: d => setYaw(d),                            // align the nose to travel
   roll(deg){ fly.rotateZ(THREE.MathUtils.degToRad(deg)); },   // one-off, to inspect other faces
 };
 </script>
