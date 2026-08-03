@@ -145,7 +145,11 @@ body{
     color-mix(in srgb,var(--accent) 62%,transparent) 0%,
     color-mix(in srgb,var(--accent) 20%,transparent) 40%,
     transparent 72%);
-  filter:blur(18px);
+  /* No filter:blur here. The backdrop is already a radial-gradient whose
+     outer stop is fully transparent, so it has no hard edge for a blur to
+     soften - but its opacity is animated every frame during the emergence,
+     and each write to a blurred layer forces a fresh blur pass. Dropping it
+     is visually near-identical and takes that cost out of the hero. */
   pointer-events:none; z-index:40; opacity:0;
 }
 
@@ -651,7 +655,10 @@ function buildCurve(){
 function resize(){
   const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h, false);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  /* A DPR-3 phone capped at 2 renders 750x1624 fragments for a canvas that
+     is mostly empty paper. 1.5 halves that work and is indistinguishable at
+     phone viewing distance for a soft-edged subject like this. */
+  renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth <= 640 ? 1.5 : 2));
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
   buildCurve();                                   // world units depend on aspect
@@ -752,9 +759,15 @@ if (!reduce){
    prefers-reduced-motion; only the scroll animation below is gated. */
 gsap.set('.hf-left', { scaleX: -1 });
 
+/* Desktop only. The frame is display:none under 640px, so on a phone this
+   timeline was still writing x/rotation/autoAlpha to eight hidden images on
+   every scroll frame - pure cost for nothing visible, during exactly the
+   stretch of scroll that felt laggy. */
 if (!reduce){
-  const frameEls = gsap.utils.toArray('#heroFrame .hf');
-  if (frameEls.length){
+  gsap.matchMedia().add('(min-width: 641px)', () => {
+    const frameEls = gsap.utils.toArray('#heroFrame .hf');
+    if (!frameEls.length) return;
+
     const heroFrameTl = gsap.timeline({
       scrollTrigger:{
         trigger: '#hero',
@@ -770,7 +783,9 @@ if (!reduce){
       .to('.hf-left',  { x: () => -(innerWidth * 0.85), rotation:'-=6', duration:1 }, 0)
       .to('.hf-right', { x: () =>  (innerWidth * 0.85), rotation:'+=6', duration:1 }, 0)
       .to(frameEls,      { autoAlpha: 0, duration:0.45 }, 0.55);
-  }
+
+    return () => { heroFrameTl.kill(); gsap.set(frameEls, { clearProps:'x,rotation,autoAlpha' }); };
+  });
 }
 
 /* ============================================================
@@ -797,11 +812,23 @@ function sampleStops(stops, t){
   return tmpC.copy(tmpA).lerp(tmpB, s - i);
 }
 
+/* Writing a custom property on :root invalidates style for every element
+   that consumes it, so doing it unconditionally meant a full-document style
+   recalc on EVERY frame. The colour only changes every few frames at scroll
+   speed, so compare first and write only on an actual change. */
+let lastBg = '', lastAccent = '';
 function applyGradient(t){
-  document.documentElement.style.setProperty('--bg', '#' + sampleStops(GRADIENT_BG, t).getHexString());
+  const bg = '#' + sampleStops(GRADIENT_BG, t).getHexString();
+  if (bg !== lastBg){
+    document.documentElement.style.setProperty('--bg', bg);
+    lastBg = bg;
+  }
   const ac = '#' + sampleStops(GRADIENT_ACCENT, Math.min(t + ACCENT_LEAD, 1)).getHexString();
-  document.documentElement.style.setProperty('--accent', ac);
-  glow.color.set(ac);
+  if (ac !== lastAccent){
+    document.documentElement.style.setProperty('--accent', ac);
+    glow.color.set(ac);
+    lastAccent = ac;
+  }
 }
 
 function applyMood(t){
@@ -829,6 +856,7 @@ const teamCards = [...document.querySelectorAll('.t-card')];
 const hud = document.getElementById('hud');
 const bloom = document.getElementById('bloom');
 let flapPhase = 0;
+let lastBloomOp = -1;
 
 /* --- scroll-velocity pitch: nose up at rest, nose down while scrolling down ---
    Derived from window.scrollY each frame rather than a Lenis event, same
@@ -877,7 +905,11 @@ function frame(){
      dragonfly, and swell to full size as the path carries it clear. */
   const born = smoothstep(0, 0.055, t);
   fly.scale.setScalar(0.08 + born * 0.92);
-  bloom.style.opacity = (1 - smoothstep(0, 0.085, t)) * 0.55;  // softer over paper
+  /* #bloom is 60vmin under filter:blur(18px); each opacity write re-composites
+     that blurred layer. Quantise and skip no-op writes, so it stops costing
+     anything the moment it has faded out. */
+  const bloomOp = Math.round((1 - smoothstep(0, 0.085, t)) * 0.55 * 1000) / 1000;
+  if (bloomOp !== lastBloomOp){ bloom.style.opacity = bloomOp; lastBloomOp = bloomOp; }
 
   /* --- orient by scroll state, held upright ---
      The legs sit on the underside, so they only come into view when the
