@@ -104,6 +104,11 @@ body{
 .hf-peony-l{ width:min(54.46vh,40vw); left:0;  bottom:0; }
 .hf-peony-r{ width:min(54.46vh,40vw); right:0; bottom:0; }
 
+/* Top-corner pieces exist for portrait only. On desktop the full-height
+   panels already carry foliage through the top corners - that is the
+   measured Figma composition - so adding more there would break it. */
+#heroFrame .hf-peony-tl, #heroFrame .hf-peony-tr{ display:none; }
+
 .hf-star-l1{ width:clamp(52px,11.15vw,212px); left:10.57%; top:-8.78%; }
 .hf-star-l2{ width:clamp(16px, 2.50vw, 47px); left: 2.42%; top:73.56%; }
 .hf-star-r1{ width:clamp(44px, 9.02vw,172px); left:93.90%; top: 9.82%; }
@@ -144,6 +149,19 @@ body{
 
   /* the two small stars are illegible at phone scale, so lift them and
      drop the smallest rather than leave 16px specks on a panel edge */
+  /* Top corners: the asset's own top is foliage and stems, so anchoring
+     it at y=0 gives the same leafy corner the desktop panels do - no
+     rotation needed. Kept narrower and faded out well above the emblem
+     so the middle stays clear. The left copy inherits scaleX(-1) from
+     .hf-left, so the pair mirrors like the bottom band. */
+  #heroFrame .hf-peony-tl, #heroFrame .hf-peony-tr{
+    display:block; width:40vw; top:0; bottom:auto;
+    -webkit-mask-image:linear-gradient(to bottom, #000 0, #000 18%, transparent 58%);
+            mask-image:linear-gradient(to bottom, #000 0, #000 18%, transparent 58%);
+  }
+  #heroFrame .hf-peony-tl{ left:0; }
+  #heroFrame .hf-peony-tr{ right:0; }
+
   #heroFrame .hf-star-l1{ left:4%;  top:-3%; width:19vw; }
   #heroFrame .hf-star-r1{ left:80%; top: 7%; width:16vw; }
   #heroFrame .hf-star-l2{ display:none; }
@@ -153,6 +171,7 @@ body{
    against width instead of height. */
 @media (max-height:520px){
   #heroFrame .hf-peony-l, #heroFrame .hf-peony-r{ width:min(54.46vh,22vw); }
+  #heroFrame .hf-peony-tl, #heroFrame .hf-peony-tr{ display:none; }
 }
 
 /* hero light bloom the dragonfly emerges from */
@@ -266,11 +285,13 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
      is exactly the botanical band measured in the mockup), plus two stars
      per side at their measured percentages. -->
 <div id="heroFrame" aria-hidden="true">
-  <img class="hf hf-left  hf-peony-l" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
+  <img class="hf hf-left  hf-peony-l"  src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
+  <img class="hf hf-left  hf-peony-tl" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
   <img class="hf hf-left  hf-star-l1" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
   <img class="hf hf-left  hf-star-l2" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
 
-  <img class="hf hf-right hf-peony-r" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
+  <img class="hf hf-right hf-peony-r"  src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
+  <img class="hf hf-right hf-peony-tr" src="images/peonies.webp" width="336" height="617" alt="" decoding="async">
   <img class="hf hf-right hf-star-r1" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
   <img class="hf hf-right hf-star-r2" src="images/star.webp"    width="320" height="371" alt="" decoding="async">
 </div>
