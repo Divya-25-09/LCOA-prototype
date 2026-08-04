@@ -650,7 +650,15 @@ camera.position.set(0, 0, CAM_Z);
    it did on the old dark ground, or it washes out to a grey smudge. */
 const key  = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(3,5,6); scene.add(key);
 const hemi = new THREE.HemisphereLight(0xffffff, 0xDDD6C7, 0.9); scene.add(hemi);
-const glow = new THREE.PointLight(0xCBA093, 5, 14); scene.add(glow);   // travels with the dragonfly, tinted by mood
+/* glow.position tracks the model's own position every frame (see the render
+   loop below), so this light sits AT the surface it's lighting - inverse-
+   square falloff at near-zero distance means intensity 5 was clipping ~13%
+   of the dragonfly's opaque pixels to (250,250,250)+ under the renderer's
+   default NoToneMapping, which reads as a glossy hotspot rather than the
+   soft mood-tinted rim-glow this was meant to be. Swept 5/3/1.5/0.8/0.4 and
+   measured the rendered canvas each time: 0.8 already gets blowout under
+   0.2%; 0.6 leaves margin either side of that knee. */
+const glow = new THREE.PointLight(0xCBA093, 0.6, 14); scene.add(glow);   // travels with the dragonfly, tinted by mood
 
 /* world-units visible at a given z, so waypoints can be authored
    as viewport fractions and stay correct on every screen size */
@@ -828,6 +836,32 @@ if (!new URLSearchParams(location.search).has('placeholder')){
       }
     });
     if (!legRoots) console.warn('[dfly] no leg bones found — legs may still be visible');
+
+    /* ---- recolour toward the emblem's palette, soften the specular ----
+       Both meshes (body: thorax+wings+legs, and Beak) came in at
+       roughness .78/1.0, metalness 0, tint white - i.e. whatever the
+       source photo texture already was. There is no clipping-safe way to
+       tell "shiny" from "correctly pale wing" by eye, so this was measured:
+       with the renderer's default NoToneMapping, raw light values above 1
+       clip straight to 255 rather than compressing, and 13% of the
+       dragonfly's opaque pixels were reading (250,250,250)+ before this
+       change (see scroll-3d-gotchas). setTint/setGlossy are exposed on
+       __dfly for retuning without a reload. */
+    const bodyMat = [], beakMat = [];
+    model.traverse(o => { if (o.isMesh){
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      for (const m of mats) (m.name === 'Beak' ? beakMat : bodyMat).push(m);
+    }});
+    const setTint = (bodyHex, beakHex = bodyHex) => {
+      for (const m of bodyMat) m.color.setHex(bodyHex);
+      for (const m of beakMat) m.color.setHex(beakHex);
+    };
+    const setGlossy = (roughness = 0.92) => {
+      for (const m of [...bodyMat, ...beakMat]) m.roughness = roughness;
+    };
+    setTint(0xA9C08C, 0xC7A868);   // moss body/wings, warmer gold head — see __dfly.setTint to retune
+    setGlossy();
+    window.__dfly && (window.__dfly.setTint = setTint, window.__dfly.setGlossy = setGlossy);
 
     if (bones.length === WING_ROOTS.length){
       placeholder.visible = false;
@@ -1138,11 +1172,14 @@ const bloom = document.getElementById('bloom');
 let flapPhase = 0;
 let lastBloomOp = -1;
 
-/* --- scroll-velocity pitch: nose up at rest, nose down while scrolling down ---
-   Derived from window.scrollY each frame rather than a Lenis event, same
-   reasoning as the earlier ScrollTrigger sync fix: it has to keep working
-   regardless of what is actually driving the scroll (Lenis, native, touch),
-   and the shared ticker sees every case. */
+/* --- scroll speed tracking ---
+   No longer drives the nose pitch (that's fixed "up" now, per explicit
+   design call - see the orient block below), but __dfly.scrollState still
+   surfaces it live for tuning, so it stays computed. Derived from
+   window.scrollY each frame rather than a Lenis event, same reasoning as
+   the earlier ScrollTrigger sync fix: it has to keep working regardless of
+   what is actually driving the scroll (Lenis, native, touch), and the
+   shared ticker sees every case. */
 let prevScrollY = scrollY, smoothedScrollSpeed = 0, lastMovingAt = 0;
 const IDLE_DWELL = 0.15;     // seconds of near-zero speed before it counts as "stopped"
 const SPEED_EPS  = 3;        // px/sec deadzone, absorbs easing residue near a stop
@@ -1160,12 +1197,11 @@ function frame(){
   /* --- position along the curve --- */
   curve.getPoint(t, pos);
 
-  /* --- scroll speed, smoothed, for the nose pitch below --- */
+  /* --- scroll speed, smoothed, surfaced live via __dfly.scrollState --- */
   const rawSpeed = dt > 0 ? (scrollY - prevScrollY) / dt : 0;   // px/sec, + = scrolling down
   prevScrollY = scrollY;
   smoothedScrollSpeed += (rawSpeed - smoothedScrollSpeed) * Math.min(1, dt * 6);
   if (Math.abs(smoothedScrollSpeed) > SPEED_EPS) lastMovingAt = el;
-  const idle = (el - lastMovingAt) > IDLE_DWELL;
 
   /* idle bob — independent of scroll, damped by mood */
   pos.x += Math.sin(el * 0.73) * 0.10 * mood.bob;
@@ -1191,19 +1227,21 @@ function frame(){
   const bloomOp = Math.round((1 - smoothstep(0, 0.085, t)) * 0.55 * 1000) / 1000;
   if (bloomOp !== lastBloomOp){ bloom.style.opacity = bloomOp; lastBloomOp = bloomOp; }
 
-  /* --- orient by scroll state, held upright ---
+  /* --- orient: nose fixed up, held upright ---
      The legs sit on the underside, so they only come into view when the
      insect is seen edge-on. Keeping its back to the camera shows the wing
      spread and hides the legs behind the body: steer using only the
      screen-plane component (no pitch out of plane), and use the view axis
      +Z as "up", so the dorsal side always faces the camera regardless of
      which way the nose points.
-     Nose direction is driven by scroll state rather than the curve tangent:
-     up while stopped (and while scrolling back up), down while scrolling
-     down. Position still follows the curve; only the pitch is decoupled
-     from it. No roll: banking would tip the underside into view. The idle
-     wobble is a yaw about the view axis instead, which stays flat to camera. */
-  noseDir.set(0, idle || smoothedScrollSpeed <= 0 ? 1 : -1, 0).multiplyScalar(NOSE);
+     Nose direction used to flip to "down" while scrolling down; now fixed
+     "up" always, per explicit design call - the pitch no longer reacts to
+     scroll speed at all (scrollY/idle are still tracked above for
+     __dfly.scrollState, just no longer read here). Position still follows
+     the curve; only the pitch is decoupled from it. No roll: banking would
+     tip the underside into view. The idle wobble is a yaw about the view
+     axis instead, which stays flat to camera. */
+  noseDir.set(0, 1, 0).multiplyScalar(NOSE);
   look.copy(pos).add(noseDir);
   mat4.lookAt(pos, look, VIEW_UP);
   targetQ.setFromRotationMatrix(mat4);
