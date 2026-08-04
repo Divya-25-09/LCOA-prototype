@@ -261,13 +261,100 @@ p{font-family:var(--f-serif); font-size:clamp(1.05rem,2.2vw,1.35rem); color:var(
 .t-card .nm{font-family:var(--f-script);font-size:1.35rem;line-height:1;color:var(--ink)}
 .t-card .ro{font-family:var(--f-sans);font-weight:500;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-body);margin-top:.35rem}
 
-/* ---- gallery: cards at varying depth, faked with scale/blur/opacity ---- */
-.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.2rem;margin-top:3rem;width:min(900px,100%)}
-.g-card{aspect-ratio:4/5;border-radius:12px;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 62%,var(--paper)),color-mix(in srgb,var(--accent) 18%,var(--paper)));border:1px solid var(--line)}
-.g-card:nth-child(2){transform:scale(.9) translateY(18px);filter:blur(1px);opacity:.72}
-.g-card:nth-child(3){transform:scale(1.04) translateY(-10px)}
-.g-card:nth-child(4){transform:scale(.86) translateY(26px);filter:blur(1.6px);opacity:.6}
-.g-card:nth-child(5){transform:scale(.96) translateY(6px);opacity:.85}
+/* ---- recap: stat strip + PINNED horizontal scrolling gallery ----
+   #gallery is pinned and the track is translated sideways by vertical
+   scroll (GSAP's classic horizontal-gallery pattern) - deliberately NOT the
+   pattern used elsewhere in this file. A pin injects a pin-spacer, so this
+   section is no longer ~100vh like its siblings, which would have desynced
+   the dragonfly's section<->waypoint mapping (see the "section N <-> segment
+   N" comment on the master ScrollTrigger) if that mapping still assumed
+   equal-height sections. It doesn't anymore: remapT() there now measures
+   every waypoint's real position instead, specifically so this could be
+   pinned safely. Do not reintroduce an equal-height assumption elsewhere
+   without checking that fix still covers it. */
+/* #gallery overrides the base section{padding:10vh 6vw}: while pinned, this
+   section's laid-out height can't exceed the viewport or whatever's past
+   the bottom edge (the focus text, as it happens) is simply not visible -
+   pinning holds position, it doesn't compress content. Measured on a
+   1440x750 window (not unusual for a laptop once browser chrome is
+   subtracted): the old 10vh+10vh padding alone reserved 150px, and with the
+   80%-bigger card at that width (342x428) the section's total content came
+   to 925px against a 750px viewport - recap-focus landed at top:760, fully
+   below the fold. Cut vertical padding here and sized .r-card off vh
+   (below) rather than vw so it degrades on short-but-wide screens instead
+   of just running off the bottom. */
+#gallery{padding-top:4vh;padding-bottom:4vh}
+.recap-stats{display:flex;gap:2.2rem;margin:.4rem 0 1rem}
+.recap-stats .rs{display:flex;flex-direction:column;align-items:center}
+.recap-stats .n{font-family:var(--f-serif);font-weight:600;font-size:1.7rem;color:var(--accent-ink);line-height:1}
+.recap-stats .l{font-family:var(--f-sans);font-weight:500;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-body);margin-top:.3rem}
+
+/* full-bleed past the section's own 6vw side padding, so more than one
+   card's neighbours are visible at once - body{overflow-x:hidden} (see the
+   base rules) is what keeps the 100vw math from opening a page scrollbar.
+   overflow:hidden (not visible) now: the track is wider than the viewport
+   on purpose and JS slides it under this window rather than letting it
+   scroll natively. */
+.recap-wrap{width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);overflow:hidden}
+.recap-track{
+  display:flex;align-items:center;gap:1rem;
+  padding-block:.5rem;
+  will-change:transform;   /* JS sets x every scrub tick - no CSS transition, it would lag behind the scrub */
+}
+/* flex-basis % resolves against the track's own width, so these spacers let
+   the FIRST and LAST card reach centre. Half of .r-card's rendered width,
+   kept in sync algebraically rather than restated: width = height*0.8 (the
+   4:5 aspect-ratio), so half-width = height*0.4 - same clamp() bounds as
+   the height below, each multiplied by 0.4. */
+.recap-track::before,.recap-track::after{content:"";flex:0 0 calc(50% - clamp(60px,16.8vh,168px))}
+.r-card{
+  position:relative;flex:none;
+  /* height-driven, NOT width: a vw-based size is blind to viewport HEIGHT,
+     which is the dimension a pinned section actually has to fit inside.
+     Verified empirically down to a 1440x650 window (see the recap gallery
+     memory) rather than derived purely on paper - the fixed ~310px of
+     eyebrow/heading/stats/focus-text chrome around the card does not shrink
+     with vh, so the multiplier had to be picked with that margin in mind. */
+  height:clamp(150px,42vh,420px);aspect-ratio:4/5;border-radius:14px;
+  overflow:hidden;   /* clips the <img> to the card's own rounded corners */
+  /* the gradient shows behind the <img> while it loads, and stands in
+     entirely for the one placeholder card that has no photo yet */
+  background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 55%,var(--paper)),color-mix(in srgb,var(--accent) 15%,var(--paper)));
+  border:1px solid var(--line);
+  opacity:.55;transform:scale(.88);   /* rewritten every scroll frame by JS - no transition here, it would fight the scrub */
+}
+.r-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* darkens just the top of the photo so the pill stays legible regardless of
+   how bright that particular photo is there - not needed on the gradient
+   placeholder card, but harmless on it either way */
+.r-card::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,0) 42%)}
+.r-card .pill{
+  position:absolute;top:.7rem;left:.7rem;z-index:1;
+  font-family:var(--f-sans);font-weight:500;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:.32rem .7rem;border-radius:999px;color:var(--paper);
+}
+/* reuses the three text colours already established elsewhere, rather than
+   inventing a 4th palette for category coding */
+.r-card .pill.service{background:var(--accent-ink)}
+.r-card .pill.fellowship{background:var(--ink-body)}
+.r-card .pill.leadership{background:var(--ink)}
+
+.recap-focus{margin-top:.8rem;min-height:5.6rem}
+/* NOT --f-display: tried it first, but Birds of Paradise is only ever used
+   elsewhere for titles with no digits (h1/h2 - "Recap", "Built on Bonds")
+   and it turns out to have no usable numeral glyphs - confirmed by
+   rendering "Chapter 1" to a canvas, where the "1" came out as an unrelated
+   circular ornament, not a digit. Several real card titles have numbers
+   ("1st BOD Meet"), so that font is out for this element. Cormorant
+   Garamond italic instead: same family already used correctly for numerals
+   elsewhere on the page (e-card dates, etc), so it's not a gamble, and
+   italic + bigger + heavier is enough to read as a title rather than
+   another line of body copy. Colour is set per-card by JS (matches that
+   card's pill - see setFocusText), so both opacity and color transition
+   together on swap. */
+.recap-focus h3{font-family:var(--f-serif);font-style:italic;font-weight:600;font-size:clamp(1.5rem,3.2vw,1.9rem);color:var(--ink);margin:0 0 .4rem;transition:opacity .3s ease,color .3s ease}
+.recap-focus p{font-size:.92rem;transition:opacity .3s ease}
 
 /* ---- events ---- */
 .ev{display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center;margin-top:3rem}
@@ -541,11 +628,43 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
 
 <!-- 4 -->
 <section id="gallery" data-mood="reflective">
-  <p class="eyebrow">Where we have been</p>
-  <h2>Past events</h2>
-  <div class="gal">
-    <div class="g-card"></div><div class="g-card"></div><div class="g-card"></div>
-    <div class="g-card"></div><div class="g-card"></div><div class="g-card"></div>
+  <p class="eyebrow">Activities till now</p>
+  <h2>Recap</h2>
+
+  <div class="recap-stats">
+    <div class="rs"><span class="n">6</span><span class="l">Events</span></div>
+    <div class="rs"><span class="n">120+</span><span class="l">Reached</span></div>
+    <div class="rs"><span class="n">3</span><span class="l">Causes</span></div>
+  </div>
+
+  <div class="recap-wrap">
+    <div class="recap-track" id="recapTrack">
+      <article class="r-card" data-title="Aanchal: Chapter 1" data-desc="Finger painting, games, and a birthday celebration filled a joyful first service visit to Bethany's Children's Home.">
+        <img src="images/recap/bethanys-visit.webp" alt="Leo Club members and children posing together at Bethany's Children's Home" width="900" height="455" decoding="async" loading="lazy">
+        <span class="pill service">Service</span>
+      </article>
+      <article class="r-card" data-title="1st BOD Meet" data-desc="Planning the term's celebrations, fellowship events, and service initiatives around the table.">
+        <img src="images/recap/bod-meet.webp" alt="Club board members on a video call planning the term" width="900" height="415" decoding="async" loading="lazy">
+        <span class="pill leadership">Leadership</span>
+      </article>
+      <article class="r-card" data-title="District Installation Ceremony" data-desc="A day of fellowship at the Lions District 3231-A4 ceremony, meeting Youth Exchange students and PID Lion Sangeeta Jatia.">
+        <img src="images/recap/installation-ceremony.webp" alt="Club members at the Lions District 3231-A4 Installation Ceremony" width="900" height="900" decoding="async" loading="lazy">
+        <span class="pill fellowship">Fellowship</span>
+      </article>
+      <article class="r-card" data-title="Club Photoshoot & 1st Meeting" data-desc="Capturing memories and aligning on roles for the year ahead at our first regular meeting.">
+        <img src="images/recap/club-photoshoot.webp" alt="Club members posing together at their photoshoot at Meadows" width="900" height="594" style="object-position:35% center" decoding="async" loading="lazy">
+        <span class="pill fellowship">Fellowship</span>
+      </article>
+      <article class="r-card" data-title="Friendship Day Distribution" data-desc="Cakes and cold drinks for Thane's rickshaw drivers and delivery partners, as thanks for their hard work.">
+        <img src="images/recap/friendship-day.webp" alt="Leo Club members handing out cakes and drinks to rickshaw drivers on Friendship Day" width="900" height="594" decoding="async" loading="lazy">
+        <span class="pill service">Service</span>
+      </article>
+    </div>
+  </div>
+
+  <div class="recap-focus">
+    <h3 id="recapTitle">Aanchal: Chapter 1</h3>
+    <p id="recapDesc">Finger painting, games, and a birthday celebration filled a joyful first service visit to Bethany's Children's Home.</p>
   </div>
 </section>
 
@@ -965,21 +1084,127 @@ resize();
 /* The hero is flex-centred, so the emblem's Y position depends on the total
    height of the hero content - which shifts when the display font finishes
    loading. Re-anchor once that has settled, and again on full load, or the
-   dragonfly emerges from where the emblem *was*. */
-document.fonts && document.fonts.ready.then(buildCurve);
-addEventListener('load', buildCurve);
+   dragonfly emerges from where the emblem *was*.
+
+   ScrollTrigger.refresh() rides along on both: font swaps change section
+   heights (that's the whole reason buildCurve needs re-running), and the
+   master body-scroll ScrollTrigger's cached 'end' does NOT auto-update for
+   that - only for window resize. Measured: without this, 'end' stayed
+   locked at whatever document.body.scrollHeight was at initial script
+   execution (before fonts had swapped), so state.t maxed out at 1 while
+   there was still real document left to scroll - the dragonfly read
+   virtualT=1 (the exit waypoint) as soon as the recap gallery's pin ended,
+   nowhere near the actual footer. */
+function settleLayout(){ buildCurve(); ScrollTrigger.refresh(); }
+document.fonts && document.fonts.ready.then(settleLayout);
+addEventListener('load', settleLayout);
 
 /* ============================================================
    5. MASTER SCROLLTRIGGER — one scrubbed timeline, whole page.
-   state.t 0→1 maps linearly onto the 6 curve segments, so
-   section N ↔ waypoint N as long as sections are 100vh.
+   state.t 0→1 tracks raw scroll progress across the whole document.
    ============================================================ */
+/* docScrollDistance: the ONE value both the master ScrollTrigger's `end`
+   and rebuildTBoundaries's `total` need, and the trickiest number in this
+   file to get right.
+
+   ScrollTrigger.refresh() temporarily reverts every active pin to its
+   natural (unpinned) layout to correctly measure OTHER triggers' positions,
+   THEN restores all pins, THEN fires the 'refresh' event - and any
+   start/end value supplied as a FUNCTION gets invoked mid-pass, while pins
+   are still reverted. Proven directly: calling the master trigger's own
+   `end` function by hand returned 8325 (correct), but letting GSAP call
+   that same function internally during refresh() produced 5095 - short by
+   exactly 3230px, the recap gallery pin's own scroll distance. A literal
+   'bottom bottom' keyword has the identical problem, just less visibly.
+
+   So this is measured from OUTSIDE that window - inside the 'refresh'
+   EVENT listener below, which fires after pins are back - and cached here.
+   Both the master trigger's `end` and rebuildTBoundaries's `total` read
+   this cached number instead of measuring live. */
+let docScrollDistance = 0;
+
 const state = { t: 0 };
 if (!reduce){
   gsap.to(state, {
     t: 1, ease:'none',
-    scrollTrigger:{ trigger:document.body, start:'top top', end:'bottom bottom', scrub:true }
+    scrollTrigger:{
+      trigger:document.body, start:'top top',
+      end: () => docScrollDistance,
+      scrub:true,
+    }
   });
+}
+
+/* remapT: state.t -> the "virtual" t that curve.getPoint/applyGradient/
+   applyMood all expect, where waypoint i lands at exactly i/SEGMENTS.
+   This used to just BE state.t, which only lined up while every section
+   measured exactly 100vh. The recap gallery is pinned and can be taller
+   than that (bigger cards, more cards, the pin's own scroll distance), so
+   boundaries are measured from each waypoint's actual element instead of
+   assumed - rebuilt on every ScrollTrigger refresh, which already fires on
+   load/resize and after the pin's own distance is known. Segments before
+   the tall one simply get a smaller slice of the 0..1 range and segments
+   after it get pushed later, exactly matching real scroll position.
+
+   getBoundingClientRect().top + scrollY, NOT el.offsetTop: offsetTop is
+   relative to offsetParent, and GSAP wraps a pinned element (#gallery) in
+   its own pin-spacer div - once pinned, gallery.offsetParent IS that
+   spacer and gallery.offsetTop reads 0 regardless of where the section
+   actually sits in the document. That collapsed the team->gallery segment
+   to ~zero width (measured: 0.2676 and 0.2677, a hair apart) and skipped
+   the dragonfly straight from segment 1 to segment 3.
+
+   getBoundingClientRect() has its OWN, different problem for the same
+   element: pinType:'transform' (see the recap gallery IIFE) holds the
+   pinned element in place with a CSS transform, and once scrolled PAST the
+   pin, GSAP leaves that transform at its final value rather than resetting
+   it - so gallery's rect reflects the pin's full scroll distance added on
+   top of its real position (measured: reported ~5917 for an element that
+   actually starts around 2700). The pin-SPACER (the element's parentNode
+   while pinned) is never transformed - only its child is - so measuring
+   the spacer instead, when one is present, is unaffected by both bugs. */
+let tBoundaries = WAYPOINTS.map((_, i) => i / SEGMENTS);   // even-spacing fallback, replaced below once elements exist
+function measureDocTop(el){
+  const p = el.parentElement;
+  const ref = (p && p.classList.contains('pin-spacer')) ? p : el;
+  return ref.getBoundingClientRect().top + scrollY;
+}
+function rebuildTBoundaries(){
+  if (docScrollDistance <= 0) return;
+  const raw = WAYPOINTS.map(w => {
+    const el = document.getElementById(w.id);
+    return el ? measureDocTop(el) / docScrollDistance : null;
+  });
+  raw[0] = 0;                          // hero always starts the scroll
+  raw[raw.length - 1] = 1;             // footer/exit always ends it
+  for (let i = 1; i < raw.length; i++){
+    const v = raw[i] == null ? raw[i - 1] + 1e-4 : raw[i];
+    raw[i] = Math.max(v, raw[i - 1] + 1e-4);   // guard against measurement noise going non-monotonic
+  }
+  tBoundaries = raw;
+}
+
+/* Runs after every refresh, with pins back in their normal state. Updates
+   docScrollDistance and, if it actually moved, asks for ONE more refresh so
+   the master trigger's `end` function (and everything pin-related) picks up
+   the corrected number - guarded by the size check so that second refresh's
+   own 'refresh' firing doesn't loop forever once the value has settled. */
+function onScrollTriggerRefresh(){
+  const measured = document.documentElement.scrollHeight - innerHeight;
+  const changed = Math.abs(measured - docScrollDistance) > 1;
+  docScrollDistance = measured;
+  rebuildTBoundaries();
+  if (changed) ScrollTrigger.refresh();
+}
+onScrollTriggerRefresh();
+ScrollTrigger.addEventListener('refresh', onScrollTriggerRefresh);
+
+function remapT(real){
+  let i = 0;
+  while (i < SEGMENTS - 1 && real > tBoundaries[i + 1]) i++;
+  const segStart = tBoundaries[i], segEnd = tBoundaries[i + 1];
+  const local = segEnd > segStart ? (real - segStart) / (segEnd - segStart) : 0;
+  return (i + THREE.MathUtils.clamp(local, 0, 1)) / SEGMENTS;
 }
 
 /* ============================================================
@@ -1189,7 +1414,7 @@ function smoothstep(a,b,x){ const t = THREE.MathUtils.clamp((x-a)/(b-a),0,1); re
 function frame(){
   const dt = Math.min(clock.getDelta(), .05);
   const el = clock.elapsedTime;
-  const t  = state.t;
+  const t  = remapT(state.t);
 
   applyGradient(t);
   const mood = applyMood(t);
@@ -1284,9 +1509,10 @@ function frame(){
    ============================================================ */
 if (reduce){
   state.t = 0.12;
-  applyGradient(state.t);
-  applyMood(state.t);
-  curve.getPoint(state.t, pos);
+  const t0 = remapT(state.t);
+  applyGradient(t0);
+  applyMood(t0);
+  curve.getPoint(t0, pos);
   fly.position.copy(pos);
   fly.scale.setScalar(1);
   bloom.style.opacity = 0;
@@ -1371,9 +1597,96 @@ if (reduce){
   addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
 })();
 
+/* ---- recap: PINNED horizontal gallery (GSAP's classic pattern) ----
+   #gallery pins and the track slides sideways as the visitor scrolls the
+   PAGE vertically - horizontalTween is that slide, and every card's own
+   ScrollTrigger reads position through containerAnimation, which is GSAP's
+   built-in support for "trigger points inside a horizontally-animating
+   container": the same 'center right'/'center left' keywords used for a
+   normal horizontal scroller resolve correctly here without a horizontal
+   flag or a custom scroller.
+
+   Reads *any* number of .r-card elements found at load, and both the pin
+   distance (distance()) and the centring spacers (CSS, see .recap-track)
+   are computed from measured widths, not a card count - so adding more
+   cards later needs no JS/CSS changes here, only more markup.
+
+   This is the one section allowed to break the "no pinning" rule, and only
+   because the master ScrollTrigger's remapT() (see that comment) no longer
+   assumes every section is 100vh - it measures real boundaries instead. */
+(function(){
+  const track = document.getElementById('recapTrack'); if (!track) return;
+  const wrap  = document.querySelector('.recap-wrap');
+  const cards = [...track.querySelectorAll('.r-card')];
+  const titleEl = document.getElementById('recapTitle');
+  const descEl  = document.getElementById('recapDesc');
+  let current = null;
+  /* same three colours the pills themselves use (.r-card .pill.<key> in
+     CSS) - read from the focused card's own pill rather than re-deriving
+     its category, so the two can never drift out of sync. */
+  const PILL_COLOR = { service:'var(--accent-ink)', fellowship:'var(--ink-body)', leadership:'var(--ink)' };
+
+  function setFocusText(card){
+    if (card === current) return;
+    current = card;
+    const pill = card.querySelector('.pill');
+    const key = pill && ['service','fellowship','leadership'].find(k => pill.classList.contains(k));
+    titleEl.style.opacity = 0; descEl.style.opacity = 0;
+    setTimeout(() => {
+      titleEl.textContent = card.dataset.title;
+      descEl.textContent  = card.dataset.desc;
+      titleEl.style.color = key ? PILL_COLOR[key] : '';
+      titleEl.style.opacity = 1; descEl.style.opacity = 1;
+    }, 220);
+  }
+
+  /* distanceScale corrects for a gap between the geometry .r-card/.recap-track
+     actually need (scrollWidth - viewport) and what GSAP's containerAnimation
+     internally treats as "one full pass" for nested 'center right'/'center
+     left' triggers - measured, not derived: with scale=1 the first and last
+     card's own trigger windows land partly OUTSIDE the tween's [0,duration]
+     domain (card0 started at -0.06, card5 ended at 0.586 of a 0.5 domain),
+     so neither can ever reach true centre/full focus. Corrected once, right
+     after creation, from the actual measured overflow - self-calibrating
+     against whatever GSAP's real formula is, rather than reverse-engineering
+     it by hand. */
+  let distanceScale = 1;
+  const distance = () => Math.max(0, track.scrollWidth - wrap.clientWidth) * distanceScale;
+
+  const horizontalTween = gsap.to(track, { x: () => -distance(), ease: 'none' });
+
+  const pinST = ScrollTrigger.create({
+    trigger: '#gallery', start: 'top top', end: () => '+=' + distance(),
+    pin: true, pinType: 'transform', scrub: true, invalidateOnRefresh: true,
+    animation: horizontalTween,
+  });
+
+  const cardSTs = cards.map(card => ScrollTrigger.create({
+    trigger: card, containerAnimation: horizontalTween,
+    start: 'center right', end: 'center left', scrub: true,
+    onUpdate: self => {
+      const p = self.progress;                        // 0 entering -> 1 leaving
+      const focus = 1 - Math.abs(p - 0.5) * 2;          // 0..1, peaks at centre
+      card.style.opacity   = (0.55 + focus * 0.45).toFixed(3);
+      card.style.transform = `scale(${(0.88 + focus * 0.12).toFixed(3)})`;
+      if (focus > 0.9) setFocusText(card);
+    },
+  }));
+
+  ScrollTrigger.refresh();
+  const span = Math.max(...cardSTs.map(s => s.end)) - Math.min(...cardSTs.map(s => s.start));
+  const dur  = horizontalTween.duration();
+  if (span > 0 && dur > 0) distanceScale *= span / dur;
+  ScrollTrigger.refresh();
+
+  setFocusText(cards[0]);
+})();
+
 /* prototype-only handle, for reviewing the flight without a mouse */
 window.__dfly = {
-  get t(){ return state.t; },
+  get t(){ return state.t; },              // raw scroll progress
+  get virtualT(){ return remapT(state.t); }, // remapped so waypoint i lands at i/SEGMENTS - see remapT
+  get tBoundaries(){ return tBoundaries; },
   lenis, fly, curve, WAYPOINTS, scene, camera, renderer,
   flipNose(){ NOSE = -NOSE; return NOSE; },          // if it travels tail-first
   setYaw: d => setYaw(d),                            // align the nose to travel
