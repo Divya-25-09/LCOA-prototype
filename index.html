@@ -12,6 +12,179 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
 
 <style>
+  /* ============================================================
+   EVENTS ENVELOPE INTERACTION (Strictly referencing palette)
+   ============================================================ */
+
+:root {
+  /* Palette from WhatsApp Image 2026-08-03 at 2.39.20 PM.jpeg */
+  --warm-ivory: #EBE5D6;
+  --antique-cream: #E5DFCF;
+  --soft-linen: #DDD6C7;
+  --dusty-blush: #CBA093;
+  --vintage-rose: #D6BEB1;
+  --sage-green: #ABB49C;
+  --olive-sage: #766F69;
+  --muted-moss: #57614D;
+  --slate-blue: #5A657C;
+  --warm-taupe: #A48D7B;
+}
+
+.events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5rem; /* Spacing between events */
+  width: 100%;
+  max-width: 800px;
+  margin-top: 4rem;
+}
+
+/* Wrapper to trigger hover for both envelope and text */
+.event-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+  cursor: pointer;
+}
+
+/* Zig-zag layout for alternating events */
+.event-item.alternate {
+  flex-direction: row-reverse;
+}
+
+/* ---- Envelope Physics ---- */
+.envelope-wrapper {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  perspective: 1200px; /* Gives the flap a 3D depth when opening */
+}
+
+.envelope {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+/* 1. The inside back of the envelope */
+.env-back {
+  position: absolute;
+  inset: 0;
+  background: var(--antique-cream); /* Vintage paper tone */
+  border: 1px solid var(--soft-linen);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--muted-moss) 15%, transparent);
+}
+
+/* 2. The Photo hidden inside */
+.env-photo {
+  position: absolute;
+  bottom: 10px;
+  left: 15px;
+  right: 15px;
+  height: 160px;
+  background: var(--warm-ivory);
+  border: 2px solid var(--soft-linen);
+  border-radius: 4px;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy spring effect */
+  z-index: 2;
+  overflow: hidden;
+}
+
+.env-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.95;
+  background: var(--vintage-rose); /* Placeholder color if image fails */
+}
+
+/* 3. The front pocket of the envelope (CSS border trick for envelope folds) */
+.env-front {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-left: 150px solid var(--vintage-rose); /* Light petal tone sides */
+  border-right: 150px solid var(--vintage-rose);
+  border-bottom: 110px solid var(--warm-ivory); /* Soft warm bg for bottom fold */
+  border-top: 90px solid transparent;
+  border-radius: 0 0 4px 4px;
+  pointer-events: none; /* Allows hover to trigger the wrapper */
+}
+
+/* 4. The top flap */
+.env-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 150px solid transparent;
+  border-right: 150px solid transparent;
+  border-top: 100px solid var(--dusty-blush); /* Main floral accent for flap */
+  z-index: 4;
+  transform-origin: top;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* ---- Side Typography ---- */
+.event-details {
+  flex: 1;
+  text-align: left;
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 320px;
+}
+
+.event-item.alternate .event-details {
+  text-align: right;
+  transform: translateX(30px);
+}
+
+.event-title {
+  font-family: var(--f-display);
+  font-size: 2.8rem;
+  color: var(--slate-blue); /* Main typography color */
+  margin: 0 0 0.8rem 0;
+  line-height: 1;
+}
+
+.event-desc {
+  font-family: var(--f-serif);
+  color: var(--muted-moss); /* Deep leaves contrast */
+  font-size: 1.15rem;
+  line-height: 1.6;
+  margin: 0;
+  border-top: 1px solid var(--warm-taupe); /* Accent line */
+  padding-top: 1rem;
+}
+
+/* ============================================================
+   HOVER STATES
+   ============================================================ */
+
+/* 1. Flap rotates up and out of the way */
+.event-item:hover .env-flap {
+  transform: rotateX(180deg);
+  z-index: 1; /* drops behind the photo so it can slide up */
+}
+
+/* 2. Photo slides up like a letter being pulled out */
+.event-item:hover .env-photo {
+  transform: translateY(-60px);
+  z-index: 4;
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--olive-sage) 25%, transparent);
+}
+
+/* 3. Text fades in smoothly from the side */
+.event-item:hover .event-details {
+  opacity: 1;
+  transform: translateX(0);
+}
 @font-face{
   font-family:'Birds of Paradise';
   font-style:normal;font-weight:400;font-display:swap;
