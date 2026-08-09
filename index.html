@@ -176,10 +176,37 @@
   box-shadow: 0 12px 24px color-mix(in srgb, var(--olive-sage) 25%, transparent);
 }
 
-/* 3. Text fades in smoothly from the side */
-.event-item:hover .event-details {
-  opacity: 1;
-  transform: translateX(0);
+/* ---- Pop-out Letter Typography ---- */
+.letter-content {
+  background: var(--warm-ivory);
+  height: 100%;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border: 1px solid var(--soft-linen);
+}
+
+.letter-content h4 {
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-size: 1.4rem;
+  color: var(--warm-taupe);
+  margin: 0 0 0.5rem 0;
+  line-height: 1;
+}
+
+.letter-content p {
+  font-family: var(--f-sans);
+  font-size: 0.85rem;
+  color: var(--muted-moss);
+  line-height: 1.5;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 }
 @font-face{
   font-family:'Birds of Paradise';
@@ -392,75 +419,88 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
   <h2>Upcoming events</h2>
 
   <div class="events-container">
-      <!-- Event 2 -->
-    <div class="event-item alternate">
-      <div class="envelope-wrappdrier">
-        <div class="envelope">
-          <div class="env-back"></div>
-          <div class="env-photo">
-            <img src="images/event-2.webp" alt="Community Drive Photo" />
-          </div>
-          <div class="env-front"></div>
-          <div class="env-flap"></div>
-        </div>
-      </div>
-      <div class="event-details">
-        <h3 class="event-title"> Aanchal </h3>
-        <p class="event-desc">15th August</p>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-    
-    <!-- Event 1 -->
+      
+    <!-- Event 1: Aanchal -->
     <div class="event-item">
       <div class="envelope-wrapper">
         <div class="envelope">
           <div class="env-back"></div>
+          
+          <!-- Pop-out Letter -->
           <div class="env-photo">
-            <!-- Replace with your actual event photo -->
-            <img src="images/event-1.webp" alt="The Unveiling Event Photo" />
+            <div class="letter-content">
+              <h4>Aanchal</h4>
+              <p>Independence Day Initiative</p>
+            </div>
           </div>
-          <div class="env-front"></div>
-          <div class="env-flap"></div>
-        </div>
-      </div>
-     <div class="event-details">
-        <h3 class="event-title">Installation Ceremony</h3>
-        <p class="event-desc">
-          <strong></strong>23rd August</strong><br><br>
-           We invite you to JASHN-E-A4 <br>
-          Where traditions shine, leaders rise, and memories are made... <br>
-          Leo District 3231 A4's Installation Ceremony!
-        </p>
-      </div>
-    </div> <!-- Closes event-item -->
-
-    <!-- Event 2 -->
-    <div class="event-item alternate">
-      <div class="envelope-wrappdrier">
-        <div class="envelope">
-          <div class="env-back"></div>
-          <div class="env-photo">
-            <img src="images/event-2.webp" alt="Community Drive Photo" />
-          </div>
+          
           <div class="env-front"></div>
           <div class="env-flap"></div>
         </div>
       </div>
       <div class="event-details">
-        <h3 class="event-title"> Old Age Home visit & Tree Plantation </h3>
-        <p class="event-desc">30th August</p>
+        <h3 class="event-title">Aanchal</h3>
+        <p class="eyebrow" style="margin-bottom: 0.8rem;">15th August</p>
+        <p class="event-desc">Join us in spreading warmth, care, and independence.</p>
+      </div>
+    </div>
+
+    <!-- Event 2: Installation Ceremony -->
+    <div class="event-item alternate">
+      <div class="envelope-wrapper">
+        <div class="envelope">
+          <div class="env-back"></div>
+          
+          <!-- Pop-out Letter -->
+          <div class="env-photo">
+             <div class="letter-content">
+              <h4>You're Invited!</h4>
+              <p>Join us for an evening of celebration.</p>
+            </div>
+          </div>
+          
+          <div class="env-front"></div>
+          <div class="env-flap"></div>
+        </div>
+      </div>
+      <div class="event-details">
+        <h3 class="event-title">Installation Ceremony</h3>
+        <p class="eyebrow" style="margin-bottom: 0.8rem;">23rd August</p>
+        <p class="event-desc">
+          🎊 We invite you to JASHN-E-A4 ✨<br>
+          Where traditions shine, leaders rise, and memories are made... ❤️💛<br>
+          Leo District 3231 A4's Installation Ceremony!
+        </p>
+      </div>
+    </div> 
+
+    <!-- Event 3: Old Age Home & Tree Plantation -->
+    <div class="event-item">
+      <div class="envelope-wrapper">
+        <div class="envelope">
+          <div class="env-back"></div>
+          
+          <!-- Pop-out Letter -->
+          <div class="env-photo">
+            <div class="letter-content">
+              <h4>Giving Back</h4>
+              <p>A day of care and green initiatives.</p>
+            </div>
+          </div>
+          
+          <div class="env-front"></div>
+          <div class="env-flap"></div>
+        </div>
+      </div>
+      <div class="event-details">
+        <h3 class="event-title">Old Age Home visit & Tree Plantation</h3>
+        <p class="eyebrow" style="margin-bottom: 0.8rem;">30th August</p>
+        <p class="event-desc">A day dedicated to honoring our elders and nurturing nature.</p>
       </div>
     </div>
 
   </div>
 </section>
-
-
-
 <!-- 6 -->
 <section id="form" data-mood="functional">
   <div class="wrap">
