@@ -145,14 +145,6 @@
 }
 
 .event-title {
-  font-family: var(--f-display);
-  font-size: 2.8rem;
-  color: var(--slate-blue); /* Main typography color */
-  margin: 0 0 0.8rem 0;
-  line-height: 1;
-}
-
-.event-title {
   font-family: var(--f-serif); /* The non-cursive serif font */
   font-style: italic; /* Makes it slanted exactly like the image */
   font-weight: 600; 
@@ -162,12 +154,14 @@
   line-height: 1.1;
 }
 
-/* HOVER STATES */
+/* ============================================================
+   HOVER STATES
+   ============================================================ */
 
 /* 1. Flap rotates up and out of the way */
 .event-item:hover .env-flap {
   transform: rotateX(180deg);
-  z-index: 1; /* drops behind the photo so it can slide up */
+  z-index: 1; 
 }
 
 /* 2. Photo slides up like a letter being pulled out */
@@ -175,6 +169,12 @@
   transform: translateY(-60px);
   z-index: 4;
   box-shadow: 0 12px 24px color-mix(in srgb, var(--olive-sage) 25%, transparent);
+}
+
+/* 3. Text fades in smoothly from the side */
+.event-item:hover .event-details {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* ---- Pop-out Letter Typography ---- */
@@ -208,7 +208,8 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-}
+
+@font-face{
 @font-face{
   font-family:'Birds of Paradise';
   font-style:normal;font-weight:400;font-display:swap;
@@ -428,6 +429,13 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
 
   <div class="events-container">
       
+  <!-- 5 -->
+<section id="events" data-mood="energetic">
+  <p class="eyebrow">What comes next</p>
+  <h2>Upcoming events</h2>
+
+  <div class="events-container">
+      
     <!-- Event 1: Aanchal -->
     <div class="event-item">
       <div class="envelope-wrapper">
@@ -509,7 +517,6 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
 
   </div>
 </section>
-         
 <!-- 6 -->
 <section id="form" data-mood="functional">
   <div class="wrap">
