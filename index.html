@@ -157,6 +157,25 @@
 /* ============================================================
    HOVER STATES
    ============================================================ */
+  /* ---- Envelope Logo Seal ---- */
+.env-seal {
+  position: absolute;
+  width: 60px; /* Size of the logo on the envelope */
+  height: auto;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5; /* Sits on top of the closed envelope */
+  pointer-events: none; /* Prevents it from interfering with hover */
+  opacity: 0.9;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); /* Soft shadow to look like a seal */
+  transition: opacity 0.4s ease;
+}
+
+/* Make the logo disappear when the envelope opens */
+.event-item:hover .env-seal {
+  opacity: 0;
+}
 
 /* 1. Flap rotates up and out of the way */
 .event-item:hover .env-flap {
@@ -437,6 +456,7 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
           
           <div class="env-front"></div>
           <div class="env-flap"></div>
+          <img class="env-seal" src="images/logo-700.webp" alt="LCOA Seal" />
         </div>
       </div>
       <div class="event-details">
@@ -462,6 +482,7 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
           
           <div class="env-front"></div>
           <div class="env-flap"></div>
+          <img class="env-seal" src="images/logo-700.webp" alt="LCOA Seal" />
         </div>
       </div>
       <div class="event-details">
@@ -487,6 +508,7 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
           
           <div class="env-front"></div>
           <div class="env-flap"></div>
+          <img class="env-seal" src="images/logo-700.webp" alt="LCOA Seal" />
         </div>
       </div>
       <div class="event-details">
