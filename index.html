@@ -153,47 +153,44 @@
   margin: 0 0 0.8rem 0;
   line-height: 1.1;
 }
-
 /* ============================================================
-   HOVER STATES
+   HOVER & CLICK STATES
    ============================================================ */
-  /* ---- Envelope Logo Seal ---- */
-.env-seal {
-  position: absolute;
-  width: 60px; /* Size of the logo on the envelope */
-  height: auto;
-  top: 55%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 5; /* Sits on top of the closed envelope */
-  pointer-events: none; /* Prevents it from interfering with hover */
-  opacity: 0.9;
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); /* Soft shadow to look like a seal */
-  transition: opacity 0.4s ease;
+
+/* 1. Flap rotates up and out of the way */
+.event-item:hover .env-flap,
+.event-item.is-open .env-flap {
+  transform: rotateX(180deg);
+  z-index: 1; 
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); /* Softer, elegant curve */
 }
 
-/* Make the logo disappear when the envelope opens */
-.event-item:hover .env-seal {
+/* 2. Photo/Letter slides up smoothly */
+.event-item:hover .env-photo,
+.event-item.is-open .env-photo {
+  transform: translateY(-65px);
+  z-index: 4;
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--olive-sage) 25%, transparent);
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); /* Softer curve */
+}
+
+/* 3. Text fades in smoothly */
+.event-item:hover .event-details,
+.event-item.is-open .event-details {
+  opacity: 1;
+  transform: translate(0, 0);
+  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); /* Softer curve */
+}
+
+/* 4. Logo seal fades out */
+.event-item:hover .env-seal,
+.event-item.is-open .env-seal {
   opacity: 0;
 }
 
-/* 1. Flap rotates up and out of the way */
-.event-item:hover .env-flap {
-  transform: rotateX(180deg);
-  z-index: 1; 
-}
-
-/* 2. Photo slides up like a letter being pulled out */
-.event-item:hover .env-photo {
-  transform: translateY(-60px);
-  z-index: 4;
-  box-shadow: 0 12px 24px color-mix(in srgb, var(--olive-sage) 25%, transparent);
-}
-
-/* 3. Text fades in smoothly from the side */
-.event-item:hover .event-details {
-  opacity: 1;
-  transform: translateX(0);
+/* Make sure the resting states also have the softer transitions */
+.env-flap, .env-photo, .event-details {
+    transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* ---- Pop-out Letter Typography ---- */
@@ -226,6 +223,28 @@
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* ============================================================
+   MOBILE OVERRIDES (Centers everything, prevents overlap)
+   ============================================================ */
+@media (max-width: 768px) {
+  .events-container {
+    gap: 8rem; /* Extra large gap on mobile so open flaps don't overlap */
+  }
+  
+  .event-item,
+  .event-item.alternate {
+    flex-direction: column; /* Stacks vertically, removes zig-zag */
+    gap: 2rem;
+  }
+
+  .event-details,
+  .event-item.alternate .event-details {
+    text-align: center;
+    max-width: 100%;
+    transform: translateY(20px); /* Animates up from the bottom instead of sides */
+  }
 }
 
 @font-face{
@@ -384,6 +403,14 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
 </style>
 </head>
 <body>
+  <script>
+  // Add click-to-toggle functionality to envelopes
+  document.querySelectorAll('.event-item').forEach(item => {
+    item.addEventListener('click', () => {
+      item.classList.toggle('is-open');
+    });
+  });
+</script>
 
 <div id="bloom"></div>
 <canvas id="dfly-canvas"></canvas>
