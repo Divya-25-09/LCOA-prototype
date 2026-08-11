@@ -38,6 +38,7 @@
 }
 
 /* ---- Envelope Typography & Layout (Centered Everywhere) ---- */
+
 .event-item,
 .event-item.alternate {
   display: flex;
@@ -46,6 +47,12 @@
   justify-content: center;
   gap: 3rem; /* Space between the envelope and the text beneath it */
   cursor: pointer;
+  margin-bottom: 10rem; /* BULLETPROOF SPACING BETWEEN ENVELOPES */
+}
+
+/* Removes the extra space under the very last event so the footer isn't pushed too far down */
+.event-item:last-child {
+  margin-bottom: 0; 
 }
 
 .event-details,
@@ -213,7 +220,11 @@
    ============================================================ */
 @media (max-width: 768px) {
   .events-container {
-    gap: 12rem; /* Extra large gap on mobile so open flaps don't overlap */
+    gap: 0; /* Turned off to rely on margin instead */
+  }
+  .event-item,
+  .event-item.alternate {
+    margin-bottom: 14rem; /* Extra large space on mobile so open flaps don't overlap */
   }
 }
 
