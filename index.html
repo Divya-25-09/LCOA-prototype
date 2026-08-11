@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LCOA — Dragonfly scroll guide (prototype)</title>
 <meta name="robots" content="noindex">
-  
 
 <!-- Type system lifted from the live site so the prototype reads as LCOA -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,11 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
 
 <style>
-  
-  
- /*envelope*/
+/*envelope*/
 :root {
-  /* Palette from WhatsApp Image 2026-08-03 at 2.39.20 PM.jpeg */
+  /* Palette from WhatsApp Image */
   --warm-ivory: #EBE5D6;
   --antique-cream: #E5DFCF;
   --soft-linen: #DDD6C7;
@@ -33,7 +30,7 @@
 .events-container {
   display: flex;
   flex-direction: column;
-  gap: 10rem; /* Spacing between events */
+  gap: 10rem; /* Spacing between different events */
   width: 100%;
   max-width: 800px;
   margin-top: 4rem;
@@ -46,17 +43,15 @@
   flex-direction: column; 
   align-items: center;
   justify-content: center;
-  gap: 5rem; /* Increased space between the envelope and the text! */
+  gap: 3rem; /* Space between the envelope and the text beneath it */
   cursor: pointer;
 }
 
 .event-details,
 .event-item.alternate .event-details {
   text-align: center;
-  opacity: 0;
-  transform: translateY(20px); 
-  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
   max-width: 400px;
+  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .event-title {
@@ -67,6 +62,69 @@
   color: var(--warm-taupe);
   margin: 0 0 0.8rem 0;
   line-height: 1.1;
+}
+
+/* ---- Envelope Physics ---- */
+.envelope-wrapper {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  perspective: 1200px; 
+}
+
+.envelope {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.env-back {
+  position: absolute;
+  inset: 0;
+  background: var(--antique-cream); 
+  border: 1px solid var(--soft-linen);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--muted-moss) 15%, transparent);
+}
+
+.env-photo {
+  position: absolute;
+  bottom: 10px;
+  left: 15px;
+  right: 15px;
+  height: 160px;
+  background: var(--warm-ivory);
+  border: 2px solid var(--soft-linen);
+  border-radius: 4px;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.env-front {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-left: 150px solid var(--vintage-rose); 
+  border-right: 150px solid var(--vintage-rose);
+  border-bottom: 110px solid var(--warm-ivory); 
+  border-top: 90px solid transparent;
+  border-radius: 0 0 4px 4px;
+  pointer-events: none; 
+}
+
+.env-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 150px solid transparent;
+  border-right: 150px solid transparent;
+  border-top: 100px solid var(--dusty-blush); 
+  z-index: 4;
+  transform-origin: top;
+  pointer-events: none;
 }
 
 /* ---- Envelope Photo Seal ---- */
@@ -106,14 +164,7 @@
   box-shadow: 0 12px 24px color-mix(in srgb, var(--olive-sage) 25%, transparent);
 }
 
-/* 3. Text fades in */
-.event-item:hover .event-details,
-.event-item.is-open .event-details {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* 4. Logo seal fades out so it doesn't block the letter */
+/* 3. Logo seal fades out so it doesn't block the letter */
 .event-item:hover .env-seal,
 .event-item.is-open .env-seal {
   opacity: 0;
@@ -123,12 +174,45 @@
 .env-flap, .env-photo {
     transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
+/* ---- Pop-out Letter Typography ---- */
+.letter-content {
+  background: var(--warm-ivory);
+  height: 100%;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border: 1px solid var(--soft-linen);
+}
+
+.letter-content h4 {
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-size: 1.4rem;
+  color: var(--warm-taupe);
+  margin: 0 0 0.5rem 0;
+  line-height: 1;
+}
+
+.letter-content p {
+  font-family: var(--f-sans);
+  font-size: 0.85rem;
+  color: var(--muted-moss);
+  line-height: 1.5;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* ============================================================
    MOBILE OVERRIDES
    ============================================================ */
 @media (max-width: 768px) {
   .events-container {
-    gap: 14rem; /* Extra large gap on mobile so open flaps don't overlap */
+    gap: 12rem; /* Extra large gap on mobile so open flaps don't overlap */
   }
 }
 
@@ -138,32 +222,18 @@
   src:local('Birds of Paradise  Personal use'),
       url('https://fonts.cdnfonts.com/s/15021/Birds%20of%20Paradise%20%C2%A9%20PERSONAL%20USE%20ONLY.woff') format('woff');
 }
+
 /* ============================================================
    MOOD SYSTEM
-   Three mood categories -> one bg + one accent each.
-   Placeholder values. Swap for real brand colours later;
-   nothing else needs to change.
    ============================================================ */
 :root{
-  /* live values, written each frame from a continuous 5-stop gradient
-     across the whole page - see GRADIENT_BG/GRADIENT_ACCENT in the JS */
   --bg:#EBE5D6;
   --accent:#CBA093;
-
-  /* Type colour is fixed, never gradient-driven. Two of the five gradient
-     colours fail contrast as body text at full saturation - Vintage Rose
-     3.68:1 and Dusty Blush 2.79:1 against Muted Moss, both under the 4.5:1
-     AA floor - which is why the background gradient uses tinted versions
-     of them (see GRADIENT_BG) while ACCENT keeps the full-strength hex,
-     since accents are never a text background.
-     Slate Blue and Muted Moss clear AA against every one of the tinted
-     background stops. */
   --ink:#5A657C;       /* slate blue - headings */
   --ink-body:#57614D;  /* muted moss - body copy */
   --line:#DDD6C7;      /* soft linen - borders & rules */
   --paper:#FFFFFF;     /* card lift over the paper tones */
 
-  /* same roles as the live site: display / sans / serif / script */
   --f-display:'Birds of Paradise','Birds of Paradise  Personal use','Cormorant Garamond',serif;
   --f-sans:'Jost',sans-serif;
   --f-serif:'Cormorant Garamond',serif;
@@ -184,7 +254,6 @@ body{
   overflow-x:hidden;
 }
 
-/* ---- the one fixed transparent canvas ---- */
 #dfly-canvas{
   position:fixed; inset:0;
   width:100vw; height:100vh;
@@ -192,7 +261,6 @@ body{
   z-index:50;
 }
 
-/* hero light bloom the dragonfly emerges from */
 #bloom{
   position:fixed; left:50%; top:46%;
   width:60vmin; height:60vmin;
@@ -206,7 +274,6 @@ body{
   pointer-events:none; z-index:40; opacity:0;
 }
 
-/* ---- sections: equal height keeps waypoint↔section alignment 1:1 ---- */
 section{
   min-height:100vh;
   display:flex; flex-direction:column;
@@ -225,13 +292,9 @@ p{font-family:var(--f-serif); font-size:clamp(1.05rem,2.2vw,1.35rem); color:var(
 .hero-logo{
   display:block; margin:0 auto;
   width:min(42vw,240px); height:auto; margin-bottom:2rem;
-  /* the emblem is a light illustration on light paper, so it needs a lift
-     rather than a hard edge */
   filter:drop-shadow(0 18px 42px color-mix(in srgb,var(--ink) 22%,transparent));
 }
 
-
-/* ---- team: cards revealed by the dragonfly's x-position ---- */
 .team-row{display:flex;gap:1.4rem;flex-wrap:wrap;justify-content:center;margin-top:3rem}
 .t-card{
   width:150px;padding:1.6rem 1rem;border-radius:14px;
@@ -245,7 +308,6 @@ p{font-family:var(--f-serif); font-size:clamp(1.05rem,2.2vw,1.35rem); color:var(
 .t-card .nm{font-family:var(--f-script);font-size:1.35rem;line-height:1;color:var(--ink)}
 .t-card .ro{font-family:var(--f-sans);font-weight:500;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-body);margin-top:.35rem}
 
-/* ---- gallery: cards at varying depth, faked with scale/blur/opacity ---- */
 .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.2rem;margin-top:3rem;width:min(900px,100%)}
 .g-card{aspect-ratio:4/5;border-radius:12px;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 62%,var(--paper)),color-mix(in srgb,var(--accent) 18%,var(--paper)));border:1px solid var(--line)}
 .g-card:nth-child(2){transform:scale(.9) translateY(18px);filter:blur(1px);opacity:.72}
@@ -253,14 +315,12 @@ p{font-family:var(--f-serif); font-size:clamp(1.05rem,2.2vw,1.35rem); color:var(
 .g-card:nth-child(4){transform:scale(.86) translateY(26px);filter:blur(1.6px);opacity:.6}
 .g-card:nth-child(5){transform:scale(.96) translateY(6px);opacity:.85}
 
-/* ---- events ---- */
 .ev{display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center;margin-top:3rem}
 .e-card{width:210px;padding:1.6rem;border-radius:14px;text-align:left;border:1px solid var(--line);background:color-mix(in srgb,var(--paper) 45%,transparent)}
 .e-card.featured{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 26%,var(--paper))}
 .e-card .dt{font-family:var(--f-sans);font-weight:500;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-body)}
 .e-card .ti{font-family:var(--f-serif);font-weight:600;margin-top:.6rem;font-size:1.25rem;color:var(--ink)}
 
-/* ---- form: dragonfly rests to the SIDE, never over the inputs ---- */
 #form .wrap{width:min(440px,100%);margin-right:auto;margin-left:0;text-align:left}
 @media(min-width:900px){ #form{align-items:flex-start;padding-left:12vw} }
 label{display:block;font-family:var(--f-sans);font-weight:500;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-body);margin:1.4rem 0 .5rem}
@@ -277,13 +337,11 @@ button.sub{margin-top:2rem;padding:.9rem 2rem;border-radius:100px;border:0;backg
 .credit a{color:var(--ink)}
 footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding:4rem 6vw;position:relative;z-index:2}
 
-/* ---- reduced motion ---- */
 @media(prefers-reduced-motion:reduce){
   .t-card{opacity:1;transform:none;transition:none}
   .g-card{filter:none;transform:none;opacity:1}
 }
 
-/* dev readout */
 #hud{position:fixed;left:10px;bottom:10px;z-index:99;font:11px ui-monospace,monospace;color:var(--ink-body);background:color-mix(in srgb,var(--paper) 70%,transparent);border:1px solid var(--line);padding:6px 9px;border-radius:6px;pointer-events:none}
 </style>
 </head>
@@ -344,13 +402,12 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
 
   <div class="events-container">
       
-    <!-- Event 1: Aanchal -->
+    <!-- Event 1: Old Age Home -->
     <div class="event-item">
       <div class="envelope-wrapper">
         <div class="envelope">
           <div class="env-back"></div>
           
-          <!-- Pop-out Letter -->
           <div class="env-photo">
             <div class="letter-content">
               <h4>Old Age Home visit</h4>
@@ -360,9 +417,15 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
           
           <div class="env-front"></div>
           <div class="env-flap"></div>
+          <img class="env-seal" src="images/seal.png" alt="Seal" />
         </div>
       </div>
-      
+      <div class="event-details">
+        <h3 class="event-title">Old Age Home Visit</h3>
+        <p class="eyebrow" style="margin-bottom: 0.8rem;">15th August</p>
+        <p class="event-desc">Join us in spreading warmth and care.</p>
+      </div>
+    </div>
 
     <!-- Event 2: Installation Ceremony -->
     <div class="event-item alternate">
@@ -370,7 +433,6 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
         <div class="envelope">
           <div class="env-back"></div>
           
-          <!-- Pop-out Letter -->
           <div class="env-photo">
              <div class="letter-content">
               <h4>Installation Ceremony</h4>
@@ -380,9 +442,15 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
           
           <div class="env-front"></div>
           <div class="env-flap"></div>
+          <img class="env-seal" src="images/logo-700.webp" alt="Seal" />
         </div>
       </div>
-    
+      <div class="event-details">
+        <h3 class="event-title">Installation Ceremony</h3>
+        <p class="eyebrow" style="margin-bottom: 0.8rem;">23rd August</p>
+        <p class="event-desc">We invite you to JASHN-E-A4. Leo District 3231 A4's Installation Ceremony!</p>
+      </div>
+    </div> 
 
     <!-- Event 3: Aanchal Chapter 2 -->
     <div class="event-item">
@@ -390,19 +458,24 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
         <div class="envelope">
           <div class="env-back"></div>
           
-          <!-- Pop-out Letter -->
           <div class="env-photo">
             <div class="letter-content">
-              <h4>Aanchal Chapter:2</h4>
+              <h4>Aanchal Chapter: 2</h4>
               <p>30th August</p>
             </div>
           </div>
           
           <div class="env-front"></div>
           <div class="env-flap"></div>
+          <img class="env-seal" src="images/seal.png" alt="Seal" />
         </div>
       </div>
-    
+      <div class="event-details">
+        <h3 class="event-title">Aanchal Chapter: 2</h3>
+        <p class="eyebrow" style="margin-bottom: 0.8rem;">30th August</p>
+        <p class="event-desc">Continuing our green initiatives and community service.</p>
+      </div>
+    </div>
 
   </div>
 </section>
@@ -964,5 +1037,6 @@ window.__dfly = {
     });
   });
 </script>
+
 </body>
 </html>
