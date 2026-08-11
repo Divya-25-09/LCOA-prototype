@@ -6,7 +6,6 @@
 <title>LCOA — Dragonfly scroll guide (prototype)</title>
 <meta name="robots" content="noindex">
   
-  
 
 <!-- Type system lifted from the live site so the prototype reads as LCOA -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,18 +38,15 @@
   margin-top: 4rem;
 }
 
-/* Wrapper to trigger hover for both envelope and text */
-.event-item {
+/* ---- Envelope Typography & Layout (Centered Everywhere) ---- */
+.event-item,
+.event-item.alternate {
   display: flex;
+  flex-direction: column; /* Stacks the envelope and text vertically */
   align-items: center;
   justify-content: center;
-  gap: 4rem;
+  gap: 2rem; /* Space between envelope and text */
   cursor: pointer;
-}
-
-/* Zig-zag layout for alternating events */
-.event-item.alternate {
-  flex-direction: row-reverse;
 }
 
 /* ---- Envelope Physics ---- */
@@ -88,17 +84,8 @@
   background: var(--warm-ivory);
   border: 2px solid var(--soft-linen);
   border-radius: 4px;
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy spring effect */
   z-index: 2;
   overflow: hidden;
-}
-
-.env-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.95;
-  background: var(--vintage-rose); /* Placeholder color if image fails */
 }
 
 /* 3. The front pocket of the envelope (CSS border trick for envelope folds) */
@@ -126,23 +113,16 @@
   border-top: 100px solid var(--dusty-blush); /* Main floral accent for flap */
   z-index: 4;
   transform-origin: top;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
 }
 
 /* ---- Side Typography ---- */
-.event-details {
-  flex: 1;
-  text-align: left;
-  opacity: 0;
-  transform: translateX(-30px);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  max-width: 320px;
-}
-
+.event-details,
 .event-item.alternate .event-details {
-  text-align: right;
-  transform: translateX(30px);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(20px); /* Text slides up from the bottom instead of sides */
+  max-width: 400px;
 }
 
 .event-title {
@@ -154,6 +134,7 @@
   margin: 0 0 0.8rem 0;
   line-height: 1.1;
 }
+
 /* ============================================================
    HOVER & CLICK STATES
    ============================================================ */
@@ -163,7 +144,6 @@
 .event-item.is-open .env-flap {
   transform: rotateX(180deg);
   z-index: 1; 
-  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); /* Softer, elegant curve */
 }
 
 /* 2. Photo/Letter slides up smoothly */
@@ -172,24 +152,16 @@
   transform: translateY(-65px);
   z-index: 4;
   box-shadow: 0 12px 24px color-mix(in srgb, var(--olive-sage) 25%, transparent);
-  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); /* Softer curve */
 }
 
 /* 3. Text fades in smoothly */
 .event-item:hover .event-details,
 .event-item.is-open .event-details {
   opacity: 1;
-  transform: translate(0, 0);
-  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); /* Softer curve */
+  transform: translateY(0);
 }
 
-/* 4. Logo seal fades out */
-.event-item:hover .env-seal,
-.event-item.is-open .env-seal {
-  opacity: 0;
-}
-
-/* Make sure the resting states also have the softer transitions */
+/* Ensure smooth resting states for the softer animation */
 .env-flap, .env-photo, .event-details {
     transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -227,24 +199,11 @@
 }
 
 /* ============================================================
-   MOBILE OVERRIDES (Centers everything, prevents overlap)
+   MOBILE OVERRIDES
    ============================================================ */
 @media (max-width: 768px) {
   .events-container {
     gap: 8rem; /* Extra large gap on mobile so open flaps don't overlap */
-  }
-  
-  .event-item,
-  .event-item.alternate {
-    flex-direction: column; /* Stacks vertically, removes zig-zag */
-    gap: 2rem;
-  }
-
-  .event-details,
-  .event-item.alternate .event-details {
-    text-align: center;
-    max-width: 100%;
-    transform: translateY(20px); /* Animates up from the bottom instead of sides */
   }
 }
 
@@ -404,14 +363,6 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
 </style>
 </head>
 <body>
-  <script>
-  // Add click-to-toggle functionality to envelopes
-  document.querySelectorAll('.event-item').forEach(item => {
-    item.addEventListener('click', () => {
-      item.classList.toggle('is-open');
-    });
-  });
-</script>
 
 <div id="bloom"></div>
 <canvas id="dfly-canvas"></canvas>
@@ -484,13 +435,13 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
           
           <div class="env-front"></div>
           <div class="env-flap"></div>
-          <img class="env-seal" src="images/seal.png" alt="LCOA Seal" />
         </div>
       </div>
+      <!-- Restored text outside the envelope for hover effect -->
       <div class="event-details">
-        <h3 class="event-title"></h3>
-        <p class="eyebrow" style="margin-bottom: 0.8rem;"></p>
-        <p class="event-desc"></p>
+        <h3 class="event-title">Old Age Home Visit</h3>
+        <p class="eyebrow" style="margin-bottom: 0.8rem;">15th August</p>
+        <p class="event-desc">Join us in spreading warmth and care.</p>
       </div>
     </div>
 
@@ -510,17 +461,17 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
           
           <div class="env-front"></div>
           <div class="env-flap"></div>
-          <img class="env-seal" src="images/logo-700.webp" alt="LCOA Seal" />
         </div>
       </div>
+      <!-- Restored text outside the envelope for hover effect -->
       <div class="event-details">
-        <h3 class="event-title"></h3>
-        <p class="eyebrow" style="margin-bottom: 0.8rem;"></p>
-        <p class="event-desc"></p>
+        <h3 class="event-title">Installation Ceremony</h3>
+        <p class="eyebrow" style="margin-bottom: 0.8rem;">23rd August</p>
+        <p class="event-desc">We invite you to JASHN-E-A4 to celebrate traditions.</p>
       </div>
     </div> 
 
-    <!-- Event 3: Old Age Home & Tree Plantation -->
+    <!-- Event 3: Aanchal Chapter 2 -->
     <div class="event-item">
       <div class="envelope-wrapper">
         <div class="envelope">
@@ -536,13 +487,13 @@ footer{min-height:60vh;display:grid;place-items:center;text-align:center;padding
           
           <div class="env-front"></div>
           <div class="env-flap"></div>
-          <img class="env-seal" src="images/logo-700.webp" alt="LCOA Seal" />
         </div>
       </div>
+      <!-- Restored text outside the envelope for hover effect -->
       <div class="event-details">
-        <h3 class="event-title"></h3>
-        <p class="eyebrow" style="margin-bottom: 0.8rem;"></p>
-        <p class="event-desc"></p>
+        <h3 class="event-title">Aanchal Chapter: 2</h3>
+        <p class="eyebrow" style="margin-bottom: 0.8rem;">30th August</p>
+        <p class="event-desc">Continuing our green initiatives.</p>
       </div>
     </div>
 
@@ -1096,6 +1047,15 @@ window.__dfly = {
   roll(deg){ fly.rotateZ(THREE.MathUtils.degToRad(deg)); },   // one-off, to inspect other faces
   get scrollState(){ return { idle: (clock.elapsedTime - lastMovingAt) > IDLE_DWELL, speed: +smoothedScrollSpeed.toFixed(1) }; },
 };
+</script>
+
+<script>
+  // Add click-to-toggle functionality to envelopes
+  document.querySelectorAll('.event-item').forEach(item => {
+    item.addEventListener('click', () => {
+      item.classList.toggle('is-open');
+    });
+  });
 </script>
 </body>
 </html>
